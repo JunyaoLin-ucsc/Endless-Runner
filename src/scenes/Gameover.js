@@ -13,7 +13,6 @@ class Gameover extends Phaser.Scene {
     }
   
     create() {
-        // 背景
         this.add.image(
             this.cameras.main.width / 2,
             this.cameras.main.height / 2,
@@ -22,7 +21,6 @@ class Gameover extends Phaser.Scene {
         .setOrigin(0.5)
         .setDisplaySize(this.cameras.main.width, this.cameras.main.height);
   
-        // 标题
         let goText = {
             fontFamily: 'Arial',
             fontSize: '60px',
@@ -38,7 +36,6 @@ class Gameover extends Phaser.Scene {
             goText
         ).setOrigin(0.5);
   
-        // 分数 & 时间
         let statStyle = {
             fontFamily: 'Arial',
             fontSize: '40px',
@@ -51,7 +48,6 @@ class Gameover extends Phaser.Scene {
             statStyle
         ).setOrigin(0.5);
   
-        // 重试按钮
         let btnStyle = {
             fontFamily: 'Arial',
             fontSize: '40px',
@@ -71,7 +67,6 @@ class Gameover extends Phaser.Scene {
             this.scene.start('Gameplay');
         });
   
-        // 主菜单按钮
         let menuBtn = this.add.text(
             this.cameras.main.width / 2,
             this.cameras.main.height / 2 + 140,
@@ -83,7 +78,6 @@ class Gameover extends Phaser.Scene {
             this.scene.start('MainMenu');
         });
   
-        // Credits
         this.add.text(
             this.cameras.main.width / 2,
             this.cameras.main.height - 60,
@@ -91,5 +85,4 @@ class Gameover extends Phaser.Scene {
             { fontFamily: 'Arial', fontSize: '24px', color: '#ddd', align: 'center' }
         ).setOrigin(0.5);
     }
-  }
-  
+}

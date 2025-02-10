@@ -15,7 +15,7 @@ class MainMenu extends Phaser.Scene {
         .setOrigin(0.5)
         .setDisplaySize(this.cameras.main.width, this.cameras.main.height);
   
-        // 添加标题文本
+        // 添加标题文本及阴影和闪烁效果
         let titleStyle = {
             fontFamily: 'Georgia, serif',
             fontSize: '80px',
@@ -33,47 +33,82 @@ class MainMenu extends Phaser.Scene {
         titleText.setShadow(5, 5, 'rgba(0,0,0,0.7)', 10, true, true);
         this.tweens.add({
             targets: titleText,
-            alpha: { from: 1, to: 0.9 },
-            duration: 1500,
+            alpha: { from: 1, to: 0.95 },
+            duration: 2000,
             yoyo: true,
             repeat: -1,
             ease: 'Sine.easeInOut'
         });
   
-        // 创建按钮（直接用文本对象）
-        // 为了让按钮区域足够大，我们使用 padding 参数
-        let btnStyle = {
+        // 定义按钮尺寸
+        let btnWidth = 300, btnHeight = 80;
+  
+        // 创建一个容器来做按钮（位置居中）
+        let buttonContainer = this.add.container(
+            this.cameras.main.width / 2 - btnWidth / 2,
+            this.cameras.main.height / 2 - btnHeight / 2
+        );
+  
+        // 在容器中绘制一个圆角矩形作为按钮背景
+        let buttonBg = this.add.graphics();
+        buttonBg.fillStyle(0xFF4500, 1);
+        buttonBg.fillRoundedRect(0, 0, btnWidth, btnHeight, 15);
+        // 添加一个白色边框
+        buttonBg.lineStyle(4, 0xffffff, 1);
+        buttonBg.strokeRoundedRect(0, 0, btnWidth, btnHeight, 15);
+  
+        // 创建按钮文字
+        let btnTextStyle = {
             fontFamily: '"Press Start 2P", monospace',
-            fontSize: '40px',
+            fontSize: '32px',
             color: '#ffffff',
-            backgroundColor: '#ff4500', // 背景色可以根据需要调整
-            padding: { x: 20, y: 10 },
             align: 'center'
         };
+        let buttonText = this.add.text(btnWidth / 2, btnHeight / 2, "PLAY", btnTextStyle)
+                                .setOrigin(0.5);
   
-        let playBtn = this.add.text(
-            this.cameras.main.width / 2,
-            this.cameras.main.height / 2,
-            'PLAY',
-            btnStyle
-        ).setOrigin(0.5)
-         .setInteractive();  // 使用文本自带的交互区域
+        // 将背景和文字添加到按钮容器中
+        buttonContainer.add([buttonBg, buttonText]);
   
-        // 鼠标指针移入时触发 selection 音效并缩放文本
-        playBtn.on('pointerover', () => {
+        // 设置容器大小并用从 (0,0) 开始的 hitArea 作为交互区域
+        buttonContainer.setSize(btnWidth, btnHeight);
+        buttonContainer.setInteractive(new Phaser.Geom.Rectangle(0, 0, btnWidth, btnHeight), Phaser.Geom.Rectangle.Contains);
+  
+        // 鼠标移入时播放 selection 音效并做缩放动画
+        buttonContainer.on('pointerover', () => {
             this.sound.play('sfx-selection', { volume: 0.75 });
-            playBtn.setScale(1.05);
+            this.tweens.add({
+                targets: buttonContainer,
+                scale: 1.05,
+                duration: 200,
+                ease: 'Linear'
+            });
         });
   
-        // 鼠标指针移出时恢复原始缩放
-        playBtn.on('pointerout', () => {
-            playBtn.setScale(1);
+        // 鼠标移出时恢复原始大小
+        buttonContainer.on('pointerout', () => {
+            this.tweens.add({
+                targets: buttonContainer,
+                scale: 1,
+                duration: 200,
+                ease: 'Linear'
+            });
         });
   
-        // 按钮按下时触发 confirm 音效并切换场景
-        playBtn.on('pointerdown', () => {
+        // 按钮按下时播放 confirm 音效并切换到 Tutorial 场景
+        buttonContainer.on('pointerdown', () => {
             this.sound.play('sfx-confirm', { volume: 0.75 });
             this.scene.start('Tutorial');
+        });
+  
+        // 为按钮添加一个淡淡的闪烁效果：alpha 在 1 与 0.95 之间缓慢变化
+        this.tweens.add({
+            targets: buttonContainer,
+            alpha: { from: 1, to: 0.95 },
+            duration: 1500,
+            yoyo: true,
+            repeat: -1,
+            ease: 'Sine.easeInOut'
         });
   
         // 添加底部版权信息

@@ -15,7 +15,7 @@ class MainMenu extends Phaser.Scene {
         .setOrigin(0.5)
         .setDisplaySize(this.cameras.main.width, this.cameras.main.height);
   
-        // 添加标题文本及阴影和淡淡闪烁效果
+        // 添加标题文本及阴影、淡淡闪烁效果
         let titleStyle = {
             fontFamily: 'Georgia, serif',
             fontSize: '80px',
@@ -40,81 +40,50 @@ class MainMenu extends Phaser.Scene {
             ease: 'Sine.easeInOut'
         });
   
-        // 定义按钮尺寸
-        let btnWidth = 300, btnHeight = 80;
-  
-        // 创建按钮容器（初始位置以容器的左上角为基准）
-        // 此处我们暂时将容器放置于屏幕中央（以后通过调整交互区域实现偏移）
-        let buttonContainer = this.add.container(
-            this.cameras.main.width / 2 - btnWidth / 2,
-            this.cameras.main.height / 2 - btnHeight / 2
-        );
-  
-        // 绘制按钮背景（圆角矩形带白色边框）
-        let buttonBg = this.add.graphics();
-        buttonBg.fillStyle(0xFF4500, 1);
-        buttonBg.fillRoundedRect(0, 0, btnWidth, btnHeight, 15);
-        buttonBg.lineStyle(4, 0xffffff, 1);
-        buttonBg.strokeRoundedRect(0, 0, btnWidth, btnHeight, 15);
-  
-        // 创建按钮文字
-        let btnTextStyle = {
+        // 使用文本对象直接制作按钮
+        // 利用 padding 属性扩大按钮区域，确保文字和背景显示一致
+        let btnStyle = {
             fontFamily: '"Press Start 2P", monospace',
-            fontSize: '32px',
+            fontSize: '40px',
             color: '#ffffff',
+            backgroundColor: '#FF4500',
+            padding: { x: 20, y: 10 },
             align: 'center'
         };
-        let buttonText = this.add.text(btnWidth / 2, btnHeight / 2, "PLAY", btnTextStyle)
-                                .setOrigin(0.5);
   
-        // 将背景和文字添加到按钮容器中
-        buttonContainer.add([buttonBg, buttonText]);
+        // 计算按钮中心位置
+        let btnX = this.cameras.main.width / 2 + 80; // 向右平移80像素
+        let btnY = this.cameras.main.height / 2 + 30; // 向下平移30像素
   
-        // 设置容器大小
-        buttonContainer.setSize(btnWidth, btnHeight);
+        let playBtn = this.add.text(btnX, btnY, 'PLAY', btnStyle)
+                              .setOrigin(0.5)
+                              .setInteractive();  // 文本对象自动使用自身边界作为 hit area
   
-        // 设置交互区域为整个容器（hitArea 坐标默认从 (0,0) 开始）
-        buttonContainer.setInteractive(new Phaser.Geom.Rectangle(0, 0, btnWidth, btnHeight), Phaser.Geom.Rectangle.Contains);
-  
-        // 调整 hitArea 的坐标，向右平移 80 像素、向下平移 30 像素
-        // 注意：hitArea 是一个 Phaser.Geom.Rectangle 对象，直接修改其 x 和 y 值即可
-        buttonContainer.input.hitArea.x += 80;
-        buttonContainer.input.hitArea.y += 30;
-  
-        // 为按钮添加鼠标移入、移出、点击事件
-        buttonContainer.on('pointerover', () => {
-            this.sound.play('sfx-selection', { volume: 0.75 });
-            // 使用 tween 缩放按钮（注意不要修改 hitArea，这里只改变显示效果）
-            this.tweens.add({
-                targets: buttonContainer,
-                scale: 1.05,
-                duration: 200,
-                ease: 'Linear'
-            });
-        });
-  
-        buttonContainer.on('pointerout', () => {
-            this.tweens.add({
-                targets: buttonContainer,
-                scale: 1,
-                duration: 200,
-                ease: 'Linear'
-            });
-        });
-  
-        buttonContainer.on('pointerdown', () => {
-            this.sound.play('sfx-confirm', { volume: 0.75 });
-            this.scene.start('Tutorial');
-        });
-  
-        // 为按钮添加一个淡淡的闪烁效果：alpha 在 1 与 0.95 之间缓慢变化
+        // 添加淡淡闪烁效果（alpha 在 1 与 0.95 之间缓慢变化）
         this.tweens.add({
-            targets: buttonContainer,
+            targets: playBtn,
             alpha: { from: 1, to: 0.95 },
             duration: 1500,
             yoyo: true,
             repeat: -1,
             ease: 'Sine.easeInOut'
+        });
+  
+        // 鼠标移入时播放 selection 音效并稍微放大按钮
+        playBtn.on('pointerover', () => {
+            this.sound.play('sfx-selection', { volume: 0.75 });
+            playBtn.setScale(1.05);
+        });
+  
+        // 鼠标移出时恢复原始大小
+        playBtn.on('pointerout', () => {
+            playBtn.setScale(1);
+        });
+  
+        // 按钮按下时播放 confirm 音效，并切换到 Tutorial 场景
+        playBtn.on('pointerdown', () => {
+            this.sound.play('sfx-confirm', { volume: 0.75 });
+            this.scene.start('Tutorial');
         });
   
         // 添加底部版权信息

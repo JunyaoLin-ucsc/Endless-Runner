@@ -45,8 +45,8 @@ class MainMenu extends Phaser.Scene {
   
         // 创建按钮容器时增加偏移：整体向右平移80像素，向下平移30像素
         let buttonContainer = this.add.container(
-            this.cameras.main.width / 2 - btnWidth / 2 + 150,
-            this.cameras.main.height / 2 - btnHeight / 2 + 50
+            this.cameras.main.width / 2 + btnWidth / 2 + 80,
+            this.cameras.main.height / 2 + btnHeight / 2 + 30
         );
   
         // 绘制按钮背景（圆角矩形带白色边框）

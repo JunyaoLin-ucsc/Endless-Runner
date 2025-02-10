@@ -3,13 +3,17 @@ class MainMenu extends Phaser.Scene {
         super("MainMenu");
     }
   
-    preload() {
-        this.load.image('menu_bg', 'assets/background1.png');
-        // 确保“Press Start 2P”字体通过 CSS 或其他方式加载
-    }
+    // preload() {
+    //     this.load.image('menu_bg', 'assets/background1.png');
+    //     // 加载音效资源
+    //     this.load.audio('sfx-confirm', 'assets/sfx-confirm.wav');
+    //     this.load.audio('sfx-escape', 'assets/sfx-escape.wav');
+    //     this.load.audio('sfx-failure', 'assets/sfx-failure.wav');
+    //     this.load.audio('sfx-selection', 'assets/sfx-selection.wav');
+    //     this.load.audio('sfx-success', 'assets/sfx-success.wav');
+    // }
   
     create() {
-        // 背景图片覆盖全屏
         this.add.image(
             this.cameras.main.width / 2,
             this.cameras.main.height / 2,
@@ -18,7 +22,6 @@ class MainMenu extends Phaser.Scene {
         .setOrigin(0.5)
         .setDisplaySize(this.cameras.main.width, this.cameras.main.height);
   
-        // 标题文字样式：使用 Georgia 字体、金色填充、黑色描边和阴影
         let titleStyle = {
             fontFamily: 'Georgia, serif',
             fontSize: '80px',
@@ -27,7 +30,6 @@ class MainMenu extends Phaser.Scene {
             strokeThickness: 8,
             align: 'center'
         };
-        // 将标题位置上移到屏幕高度的 1/4
         let titleText = this.add.text(
             this.cameras.main.width / 2,
             this.cameras.main.height / 4,
@@ -35,8 +37,6 @@ class MainMenu extends Phaser.Scene {
             titleStyle
         ).setOrigin(0.5);
         titleText.setShadow(5, 5, 'rgba(0,0,0,0.7)', 10, true, true);
-  
-        // 为标题添加柔和闪烁效果（alpha 在 1 与 0.9 间缓慢变换）
         this.tweens.add({
             targets: titleText,
             alpha: { from: 1, to: 0.9 },
@@ -46,7 +46,6 @@ class MainMenu extends Phaser.Scene {
             ease: 'Sine.easeInOut'
         });
   
-        // PLAY 按钮 —— 使用像素风格字体 "Press Start 2P"
         let btnStyle = {
             fontFamily: '"Press Start 2P", monospace',
             fontSize: '40px',
@@ -56,20 +55,15 @@ class MainMenu extends Phaser.Scene {
             align: 'center'
         };
         let playText = this.add.text(0, 0, 'PLAY', btnStyle).setOrigin(0.5);
-  
-        // 计算按钮背景尺寸（在文字外加上内边距）
         let paddingX = 20, paddingY = 10;
         let baseBgWidth = playText.width + paddingX * 2;
         let bgHeight = playText.height + paddingY * 2;
-        // 背景图形尺寸保持不变
         let bgWidth = baseBgWidth;
   
-        // 使用 Graphics 绘制圆角背景
         let btnBg = this.add.graphics();
         btnBg.fillGradientStyle(0xffa500, 0xffa500, 0xff4500, 0xff4500, 1);
         btnBg.fillRoundedRect(0, 0, bgWidth, bgHeight, 10);
   
-        // 将背景和文字放入一个容器中，并将文字居中于容器
         let playBtn = this.add.container(
             this.cameras.main.width / 2 - bgWidth / 2,
             this.cameras.main.height / 2 - bgHeight / 2
@@ -77,14 +71,12 @@ class MainMenu extends Phaser.Scene {
         playBtn.add([btnBg, playText]);
         playText.setPosition(bgWidth / 2, bgHeight / 2);
   
-        // 设置容器的尺寸和交互区域
         playBtn.setSize(bgWidth, bgHeight);
-        // 修改：将交互区域（hit area）向右偏移 50 像素、向下偏移 10 像素，
-        // 同时宽度增加 20 个像素和高度增加 20 个像素（即背景尺寸的基础上增加 20）
         playBtn.setInteractive(new Phaser.Geom.Rectangle(50, 10, bgWidth + 20, bgHeight + 20), Phaser.Geom.Rectangle.Contains);
   
-        // 鼠标悬停时按钮略微放大，同时更新 hit area 保持偏移
+        // 鼠标指针移入时播放 selection 音效
         playBtn.on('pointerover', () => {
+            this.sound.play('sfx-selection');
             this.tweens.add({
                 targets: playBtn,
                 scaleX: 1.05,
@@ -109,12 +101,12 @@ class MainMenu extends Phaser.Scene {
             });
         });
   
-        // 点击按钮进入 Tutorial 场景
+        // 按钮按下时播放 confirm 音效
         playBtn.on('pointerdown', () => {
+            this.sound.play('sfx-confirm');
             this.scene.start('Tutorial');
         });
   
-        // 底部版权信息
         this.add.text(
             this.cameras.main.width / 2,
             this.cameras.main.height - 40,

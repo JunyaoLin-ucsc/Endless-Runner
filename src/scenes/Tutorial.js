@@ -3,12 +3,17 @@ class Tutorial extends Phaser.Scene {
         super("Tutorial");
     }
   
-    preload() {
-        this.load.image('tutorial_bg', 'assets/background1.png');
-    }
+    // preload() {
+    //     this.load.image('tutorial_bg', 'assets/background1.png');
+    //     // 同样加载音效资源
+    //     this.load.audio('sfx-confirm', 'assets/sfx-confirm.wav');
+    //     this.load.audio('sfx-escape', 'assets/sfx-escape.wav');
+    //     this.load.audio('sfx-failure', 'assets/sfx-failure.wav');
+    //     this.load.audio('sfx-selection', 'assets/sfx-selection.wav');
+    //     this.load.audio('sfx-success', 'assets/sfx-success.wav');
+    // }
   
     create() {
-        // Display full-screen background
         this.add.image(
             this.cameras.main.width / 2,
             this.cameras.main.height / 2,
@@ -17,7 +22,6 @@ class Tutorial extends Phaser.Scene {
         .setOrigin(0.5)
         .setDisplaySize(this.cameras.main.width, this.cameras.main.height);
   
-        // Updated instruction text in English with blue color
         let tutorialStr = 
             "Instructions:\n" +
             "1. Move your mouse to control the basket's horizontal movement on the platform.\n" +
@@ -30,12 +34,11 @@ class Tutorial extends Phaser.Scene {
         let textConfig = {
             fontFamily: 'Arial',
             fontSize: '26px',
-            color: '#0000FF',  // Blue text
+            color: '#0000FF',
             align: 'left',
             wordWrap: { width: this.cameras.main.width - 80 }
         };
   
-        // Center the instructions horizontally; position near the top (at 1/6 of the screen height)
         this.add.text(
             this.cameras.main.width / 2,
             this.cameras.main.height / 6,
@@ -43,7 +46,6 @@ class Tutorial extends Phaser.Scene {
             textConfig
         ).setOrigin(0.5, 0);
   
-        // Button configuration for starting the game
         let btnConfig = {
             fontFamily: 'Arial',
             fontSize: '40px',
@@ -59,7 +61,15 @@ class Tutorial extends Phaser.Scene {
             btnConfig
         ).setOrigin(0.5).setInteractive();
   
+        startBtn.on('pointerover', () => {
+            this.sound.play('sfx-selection');
+            startBtn.setScale(1.05);
+        });
+        startBtn.on('pointerout', () => {
+            startBtn.setScale(1);
+        });
         startBtn.on('pointerdown', () => {
+            this.sound.play('sfx-confirm');
             this.scene.start('Gameplay');
         });
     }

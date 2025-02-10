@@ -3,55 +3,50 @@ class Gameplay extends Phaser.Scene {
         super("Gameplay");
     }
   
-    preload() {
-        // 背景
-        this.load.image('game_bg', 'assets/background1.png');
-        // 平台
-        this.load.image('platform', 'assets/platform.png');
+    // preload() {
+    //     this.load.image('game_bg', 'assets/background1.png');
+    //     this.load.image('platform', 'assets/platform.png');
+    //     this.load.spritesheet('basketSheet', 'assets/basket-Sheet.png', {
+    //         frameWidth: 32,
+    //         frameHeight: 32
+    //     });
   
-        // 篮子（4帧动画）——原图尺寸 32×32
-        this.load.spritesheet('basketSheet', 'assets/basket-Sheet.png', {
-            frameWidth: 32,
-            frameHeight: 32
-        });
+    //     this.load.image('apple', 'assets/apple.png');
+    //     this.load.image('banana', 'assets/banana.png');
+    //     this.load.image('orange', 'assets/orange.png');
+    //     this.load.image('watermelon', 'assets/watermelon.png');
+    //     this.load.image('strawberry', 'assets/strawberry.png');
+    //     this.load.image('bomb', 'assets/bomb.png');
+    //     this.load.image('stone', 'assets/falling stone.png');
+    //     this.load.image('extraBasket', 'assets/basket.png');
+    //     this.load.image('coin', 'assets/coin.png');
   
-        // 各种下落物，均为 32×32
-        this.load.image('apple', 'assets/apple.png');
-        this.load.image('banana', 'assets/banana.png');
-        this.load.image('orange', 'assets/orange.png');
-        this.load.image('watermelon', 'assets/watermelon.png');
-        this.load.image('strawberry', 'assets/strawberry.png');
-        this.load.image('bomb', 'assets/bomb.png');
-        this.load.image('stone', 'assets/falling stone.png');
-        this.load.image('extraBasket', 'assets/basket.png');
-        // 新增：coin 作为磁铁道具
-        this.load.image('coin', 'assets/coin.png');
-  
-        // 落叶
-        this.load.image('leaf', 'assets/leaf.png');
-    }
+    //     this.load.image('leaf', 'assets/leaf.png');
+
+    //     // 加载音效资源
+    //     this.load.audio('sfx-confirm', 'assets/sfx-confirm.wav');
+    //     this.load.audio('sfx-escape', 'assets/sfx-escape.wav');
+    //     this.load.audio('sfx-failure', 'assets/sfx-failure.wav');
+    //     this.load.audio('sfx-selection', 'assets/sfx-selection.wav');
+    //     this.load.audio('sfx-success', 'assets/sfx-success.wav');
+    // }
   
     create() {
-        // ========== 基本参数 ==========
         this.gameWidth  = this.cameras.main.width;
         this.gameHeight = this.cameras.main.height;
   
-        this.score        = 0;   // 得分
-        this.missedFruits = 0;   // 漏接计数
-        this.basketCount  = 3;   // 篮子数量
-        this.timeElapsed  = 0;   // 游戏时长
+        this.score        = 0;
+        this.missedFruits = 0;
+        this.basketCount  = 3;
+        this.timeElapsed  = 0;
   
-        // 新增：磁铁功能相关，coin存储数量（最大10）
         this.coinCount = 0;
   
-        // 下落速度控制参数
-        this.baseFallSpeed = 100;  // 初始下落速度（像素/秒）
-        // 每 20 秒增加 20 像素/秒
+        this.baseFallSpeed = 100; 
   
         this.ignoreGroundReset = false;
         this.isDamaged = false;
   
-        // ========== 背景 ==========
         this.bg = this.add.image(
             this.gameWidth / 2,
             this.gameHeight / 2,
@@ -62,7 +57,6 @@ class Gameplay extends Phaser.Scene {
   
         this.physics.world.setBounds(0, 0, this.gameWidth, this.gameHeight);
   
-        // ========== 平台 ==========
         this.platform = this.physics.add.staticSprite(
             this.gameWidth / 2,
             this.gameHeight - 80,
@@ -72,7 +66,6 @@ class Gameplay extends Phaser.Scene {
         this.platform.refreshBody();
         this.platform.body.setSize(768, 1, true);
   
-        // ========== 4帧篮子动画 ==========
         this.anims.create({
             key: 'basket_closing',
             frames: this.anims.generateFrameNumbers('basketSheet', { start: 0, end: 3 }),
@@ -86,18 +79,17 @@ class Gameplay extends Phaser.Scene {
             repeat: 0
         });
   
-        // ========== 玩家篮子 ==========
         this.basket = this.physics.add.sprite(this.platform.x, this.platform.y, 'basketSheet');
         this.basket.setScale(3);
         this.basket.setFrame(0);
         this.isBasketClosed = false;
         this.basket.body.setSize(16, 16, true);
+        // 将篮子固定在平台上方
         this.basket.y = this.platform.y - 40;
         this.basket.setCollideWorldBounds(true);
         this.basket.setBounce(0);
         this.physics.add.collider(this.basket, this.platform);
   
-        // ========== 输入控制 ==========
         this.input.on('pointermove', (pointer) => {
             this.basket.x = Phaser.Math.Clamp(pointer.x, 40, this.gameWidth - 40);
         });
@@ -105,34 +97,20 @@ class Gameplay extends Phaser.Scene {
             this.toggleBasketLid();
         });
   
-        this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
-        this.spaceDownTime = 0;
-        this.spaceKey.on('down', () => {
-            this.spaceDownTime = this.time.now;
-        });
-        this.spaceKey.on('up', () => {
-            let pressDuration = this.time.now - this.spaceDownTime;
-            let maxVelocity = 700;
-            let jumpVelocity = Math.min(pressDuration * 0.5, maxVelocity);
-            this.basket.setVelocityY(-jumpVelocity);
-        });
+        // 已移除与篮子跳跃相关代码
   
-        // ========== 各种下落物组 ==========
         this.fruitGroup = this.physics.add.group();
         this.bombGroup = this.physics.add.group();
         this.stoneGroup = this.physics.add.group();
         this.extraBasketGroup = this.physics.add.group();
-        // 新增：coinGroup 用于磁铁道具
         this.coinGroup = this.physics.add.group();
   
         this.physics.add.overlap(this.basket, this.fruitGroup, this.handleCatchFruit, null, this);
         this.physics.add.overlap(this.basket, this.bombGroup, this.handleBombCollision, null, this);
         this.physics.add.overlap(this.basket, this.stoneGroup, this.handleStoneCollision, null, this);
         this.physics.add.overlap(this.basket, this.extraBasketGroup, this.handleExtraBasketCollision, null, this);
-        // 新增：当篮子碰到 coin 时，收集 coin
         this.physics.add.overlap(this.basket, this.coinGroup, this.handleCoinCollision, null, this);
   
-        // ========== 屏幕底部“bottomLine” ==========
         this.bottomLine = this.physics.add.staticSprite(this.gameWidth / 2, this.gameHeight + 150, null);
         this.bottomLine.setDisplaySize(this.gameWidth, 150);
         this.bottomLine.body.setSize(this.gameWidth, 150, true);
@@ -141,9 +119,10 @@ class Gameplay extends Phaser.Scene {
         this.bottomLine.setImmovable(true);
         this.bottomLine.body.allowGravity = false;
   
-        // 修改：仅对 fruitGroup 的碰撞处理做调整，确保水果掉出后计为漏接
+        // 当水果接触到底部时，触发漏接（failure）效果
         this.physics.add.collider(this.fruitGroup, this.bottomLine, (fruit) => {
             this.handleMissedFruit();
+            this.sound.play('sfx-failure');
             fruit.setVelocityY(0);
             fruit.body.setAllowGravity(false);
             this.time.addEvent({
@@ -157,7 +136,6 @@ class Gameplay extends Phaser.Scene {
         this.physics.add.collider(this.extraBasketGroup, this.bottomLine, (eb) => { eb.destroy(); });
         this.physics.add.collider(this.coinGroup, this.bottomLine, (coin) => { coin.destroy(); });
   
-        // ========== 落叶粒子 ==========
         let leafParticles = this.add.particles('leaf');
         leafParticles.createEmitter({
             x: { min: 0, max: this.gameWidth },
@@ -174,25 +152,23 @@ class Gameplay extends Phaser.Scene {
             maxParticles: 30,
         });
   
-        // ========== UI文本 ==========
         this.scoreText = this.add.text(20, 20, `Score: ${this.score}`, { fontSize: '32px', fill: '#fff' });
         this.timeText = this.add.text(20, 60, `Time: 0`, { fontSize: '32px', fill: '#fff' });
         this.basketText = this.add.text(20, 100, `Basket: ${this.basketCount}`, { fontSize: '32px', fill: '#fff' });
         this.missedText = this.add.text(20, this.gameHeight - 40, `Missed: ${this.missedFruits}`, { fontSize: '32px', fill: '#fff' });
         this.coinText = this.add.text(20, this.gameHeight - 80, `Coin: ${this.coinCount}`, { fontSize: '32px', fill: '#fff' });
-        // 新增：显示磁铁剩余时间在右上角
         this.magnetText = this.add.text(this.gameWidth - 220, 20, '', { fontSize: '32px', fill: '#fff' });
   
-        // ========== 定时生成下落物 ==========
+        // 创建 success 音效实例，用于在成功接到水果、金币和篮子时播放，
+        // 播放前会先停止上一次的播放以避免音量叠加
+        this.successSound = this.sound.add('sfx-success', { volume: 1 });
+  
         this.time.addEvent({
             delay: 800,
             callback: () => { this.spawnFallingObject(); },
             loop: true
         });
   
-        // 删除了左右边缘 hitbox 相关代码
-  
-        // 新增：监听 E 键，用于激活磁铁效果
         this.eKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E);
         this.magnetActive = false;
     }
@@ -211,11 +187,11 @@ class Gameplay extends Phaser.Scene {
         this.fruitGroup.getChildren().forEach((fruit) => {
             if (fruit.y > this.gameHeight) {
                 this.handleMissedFruit();
+                this.sound.play('sfx-failure');
                 fruit.destroy();
             }
         });
       
-        // 限制所有下落物品横向不出界（update中校正）
         let allFalling = [].concat(
             this.fruitGroup.getChildren(),
             this.bombGroup.getChildren(),
@@ -237,15 +213,13 @@ class Gameplay extends Phaser.Scene {
             }
         });
       
-        // 磁铁效果：检测 E 键按下并激活（持续 10 秒）
         if (Phaser.Input.Keyboard.JustDown(this.eKey) && !this.magnetActive && this.coinCount > 0) {
             this.coinCount--;
             this.coinText.setText(`Coin: ${this.coinCount}`);
             this.magnetActive = true;
-            this.magnetEndTime = this.timeElapsed + 10; // 10秒后关闭磁铁效果
+            this.magnetEndTime = this.timeElapsed + 10;
         }
       
-        // 更新磁铁剩余时间显示
         if (this.magnetActive) {
             let remaining = Math.ceil(this.magnetEndTime - this.timeElapsed);
             if (remaining <= 0) {
@@ -258,7 +232,6 @@ class Gameplay extends Phaser.Scene {
             this.magnetText.setText('');
         }
       
-        // 如果磁铁效果激活，遍历 fruitGroup 中处于下半屏的水果自动吸附到篮子
         if (this.magnetActive) {
             this.fruitGroup.getChildren().forEach(fruit => {
                 if (fruit.y > this.gameHeight / 2 && !fruit.isMagnetized) {
@@ -319,11 +292,9 @@ class Gameplay extends Phaser.Scene {
             type = 'fruit';
         }
         
-        // 如果篮子数已达到10，则 extraBasket 改为 coin
         if (type === 'extraBasket' && this.basketCount >= 10) {
             type = 'coin';
         }
-        // 新增：如果 coin 数已达到5，则不掉落 coin，改为 fruit
         if (type === 'coin' && this.coinCount >= 5) {
             type = 'fruit';
         }
@@ -346,7 +317,6 @@ class Gameplay extends Phaser.Scene {
             newObj = this.coinGroup.create(xPos, 0, 'coin');
         }
         
-        // 设置缩放：对于 fruit 类型，如果是 apple、banana、orange、watermelon，则乘以 0.75；coin 按 coin 逻辑
         if (type === 'fruit') {
             let baseScale = Phaser.Math.FloatBetween(3, 3.5);
             if (fruitKey === 'apple' || fruitKey === 'banana' || fruitKey === 'orange' || fruitKey === 'watermelon') {
@@ -427,10 +397,20 @@ class Gameplay extends Phaser.Scene {
         }
     }
     
+    // 辅助函数：播放 success 音效（先停止正在播放的效果）
+    playSuccessSound() {
+        if (this.successSound.isPlaying) {
+            this.successSound.stop();
+        }
+        this.successSound.play();
+    }
+    
+    // 成功接到水果时播放 success 音效并加分
     handleCatchFruit(basket, fruit) {
         if (!this.magnetActive && this.isBasketClosed) { return; }
         this.score++;
         this.scoreText.setText(`Score: ${this.score}`);
+        this.playSuccessSound();
         fruit.destroy();
     }
     
@@ -475,18 +455,22 @@ class Gameplay extends Phaser.Scene {
         });
     }
     
+    // 成功接到篮子时也播放 success 音效
     handleExtraBasketCollision(basket, eb) {
         if (this.isBasketClosed) { return; }
         eb.destroy();
         this.basketCount++;
         this.basketText.setText(`Basket: ${this.basketCount}`);
+        this.playSuccessSound();
     }
     
+    // 成功接到金币（磁铁）时播放 success 音效
     handleCoinCollision(basket, coin) {
         coin.destroy();
         if (this.coinCount < 5) {
             this.coinCount++;
             this.coinText.setText(`Coin: ${this.coinCount}`);
+            this.playSuccessSound();
         }
     }
     
@@ -524,7 +508,6 @@ class Gameplay extends Phaser.Scene {
         }
     }
     
-    // 新增：利用 Graphics API 动态生成爆炸效果（如果需要）
     addExplosion(x, y) {
         let explosion = this.add.particles('coin');
         explosion.createEmitter({

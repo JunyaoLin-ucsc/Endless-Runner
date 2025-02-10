@@ -5,7 +5,7 @@ let config = {
   pixelArt: true, 
   antialias: false,
   resolution: 2,
-  scene: [ MainMenu, Tutorial, Gameplay, Gameover ],
+  scene: [ Preloader, MainMenu, Tutorial, Gameplay, Gameover ],
   physics: {
       default: 'arcade',
       arcade: {

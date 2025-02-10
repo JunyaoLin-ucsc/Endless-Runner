@@ -13,6 +13,9 @@ let config = {
           fps: 60,
           gravity: { y: 0 } 
       }
+  },
+  sound: {
+    volume: 0.75
   }
 };
 

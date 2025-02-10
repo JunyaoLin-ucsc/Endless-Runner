@@ -3,15 +3,7 @@ class MainMenu extends Phaser.Scene {
         super("MainMenu");
     }
   
-    // preload() {
-    //     this.load.image('menu_bg', 'assets/background1.png');
-    //     // 加载音效资源
-    //     this.load.audio('sfx-confirm', 'assets/sfx-confirm.wav');
-    //     this.load.audio('sfx-escape', 'assets/sfx-escape.wav');
-    //     this.load.audio('sfx-failure', 'assets/sfx-failure.wav');
-    //     this.load.audio('sfx-selection', 'assets/sfx-selection.wav');
-    //     this.load.audio('sfx-success', 'assets/sfx-success.wav');
-    // }
+    // preload() 已在 Preloader 中加载资源
   
     create() {
         this.add.image(
@@ -71,12 +63,13 @@ class MainMenu extends Phaser.Scene {
         playBtn.add([btnBg, playText]);
         playText.setPosition(bgWidth / 2, bgHeight / 2);
   
+        // 设置容器的尺寸后，直接使用默认的交互区域
         playBtn.setSize(bgWidth, bgHeight);
-        playBtn.setInteractive(new Phaser.Geom.Rectangle(50, 10, bgWidth + 20, bgHeight + 20), Phaser.Geom.Rectangle.Contains);
+        playBtn.setInteractive(); // 或者： setInteractive(new Phaser.Geom.Rectangle(0, 0, bgWidth, bgHeight), Phaser.Geom.Rectangle.Contains);
   
         // 鼠标指针移入时播放 selection 音效
         playBtn.on('pointerover', () => {
-            this.sound.play('sfx-selection');
+            this.sound.play('sfx-selection', { volume: 0.75 });
             this.tweens.add({
                 targets: playBtn,
                 scaleX: 1.05,
@@ -84,10 +77,12 @@ class MainMenu extends Phaser.Scene {
                 duration: 200,
                 ease: 'Linear',
                 onUpdate: () => {
-                    playBtn.input.hitArea.setTo(50, 10, (bgWidth + 20) * playBtn.scaleX, (bgHeight + 20) * playBtn.scaleY);
+                    // 更新交互区域也可以使用 playBtn.getBounds() 自动匹配
+                    playBtn.input.hitArea.setTo(0, 0, bgWidth, bgHeight);
                 }
             });
         });
+  
         playBtn.on('pointerout', () => {
             this.tweens.add({
                 targets: playBtn,
@@ -96,14 +91,14 @@ class MainMenu extends Phaser.Scene {
                 duration: 200,
                 ease: 'Linear',
                 onUpdate: () => {
-                    playBtn.input.hitArea.setTo(50, 10, (bgWidth + 20) * playBtn.scaleX, (bgHeight + 20) * playBtn.scaleY);
+                    playBtn.input.hitArea.setTo(0, 0, bgWidth, bgHeight);
                 }
             });
         });
   
         // 按钮按下时播放 confirm 音效
         playBtn.on('pointerdown', () => {
-            this.sound.play('sfx-confirm');
+            this.sound.play('sfx-confirm', { volume: 0.75 });
             this.scene.start('Tutorial');
         });
   

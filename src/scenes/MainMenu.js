@@ -3,7 +3,7 @@ class MainMenu extends Phaser.Scene {
         super("MainMenu");
     }
   
-    // preload() 已在 Preloader 中加载共享资源
+    // preload() 已由 Preloader 统一加载所有共享资源
   
     create() {
         // 添加背景图像
@@ -15,7 +15,7 @@ class MainMenu extends Phaser.Scene {
         .setOrigin(0.5)
         .setDisplaySize(this.cameras.main.width, this.cameras.main.height);
   
-        // 添加标题文本及阴影、淡淡闪烁效果
+        // 添加标题文本及阴影和轻微闪烁效果
         let titleStyle = {
             fontFamily: 'Georgia, serif',
             fontSize: '80px',
@@ -41,18 +41,16 @@ class MainMenu extends Phaser.Scene {
         });
   
         // 按钮参数
-        let btnWidth = 300;
-        let btnHeight = 80;
-        // 期望按钮中心应位于屏幕中点再加偏移（向右80像素、向下30像素）
-        let offsetX = 80;
-        let offsetY = 30;
-        let centerX = this.cameras.main.width / 2 + offsetX;
-        let centerY = this.cameras.main.height / 2 + offsetY;
+        let btnWidth = 300, btnHeight = 80;
   
-        // 创建一个容器作为按钮，容器内的坐标以 (0,0) 为左上角
-        let buttonContainer = this.add.container(0, 0);
+        // 计算屏幕中心坐标（不做任何额外偏移）
+        let centerX = this.cameras.main.width / 2;
+        let centerY = this.cameras.main.height / 2;
   
-        // 绘制按钮背景：圆角矩形并带白色边框
+        // 创建一个容器作为按钮，容器坐标设置为使其中心与屏幕中心重合
+        let buttonContainer = this.add.container(centerX - btnWidth / 2, centerY - btnHeight / 2);
+  
+        // 绘制按钮背景（圆角矩形带白色边框）
         let buttonBg = this.add.graphics();
         buttonBg.fillStyle(0xFF4500, 1);
         buttonBg.fillRoundedRect(0, 0, btnWidth, btnHeight, 15);
@@ -66,23 +64,19 @@ class MainMenu extends Phaser.Scene {
             color: '#ffffff',
             align: 'center'
         };
-        let buttonText = this.add.text(btnWidth / 2, btnHeight / 2, "PLAY", btnTextStyle).setOrigin(0.5);
+        let buttonText = this.add.text(btnWidth / 2, btnHeight / 2, "PLAY", btnTextStyle)
+                                .setOrigin(0.5);
   
-        // 将背景和文字加入容器
+        // 将背景和文字加入容器中
         buttonContainer.add([buttonBg, buttonText]);
   
-        // 设定容器的尺寸（用于后续设置交互区域）
+        // 设置容器尺寸（用于交互区域判断）
         buttonContainer.setSize(btnWidth, btnHeight);
   
-        // 将容器的位置设置为使其中心正好位于 centerX, centerY
-        buttonContainer.setPosition(centerX - btnWidth / 2, centerY - btnHeight / 2);
-  
-        // 为容器设置交互区域，区域从容器左上角 (0,0) 开始，大小与容器一致
+        // 设置交互区域为整个容器（区域从 (0,0) 开始，与容器图层完全重合）
         buttonContainer.setInteractive(new Phaser.Geom.Rectangle(0, 0, btnWidth, btnHeight), Phaser.Geom.Rectangle.Contains);
   
-        // （注意：此处容器的显示与交互区域完全一致，不需要单独调整 hitArea）
-  
-        // 鼠标移入时播放 selection 音效，并做缩放动画
+        // 鼠标移入时播放 selection 音效，并做轻微缩放
         buttonContainer.on('pointerover', () => {
             this.sound.play('sfx-selection', { volume: 0.75 });
             this.tweens.add({
@@ -103,13 +97,13 @@ class MainMenu extends Phaser.Scene {
             });
         });
   
-        // 按钮按下时播放 confirm 音效并切换场景
+        // 按钮按下时播放 confirm 音效并切换到 Tutorial 场景
         buttonContainer.on('pointerdown', () => {
             this.sound.play('sfx-confirm', { volume: 0.75 });
             this.scene.start('Tutorial');
         });
   
-        // 为按钮添加淡淡闪烁效果（alpha 在 1 与 0.95 之间缓慢变化）
+        // 为按钮添加一个淡淡的闪烁效果：alpha 在 1 与 0.95 之间缓慢变化
         this.tweens.add({
             targets: buttonContainer,
             alpha: { from: 1, to: 0.95 },

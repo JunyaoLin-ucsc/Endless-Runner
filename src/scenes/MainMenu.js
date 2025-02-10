@@ -56,6 +56,7 @@ class MainMenu extends Phaser.Scene {
         btnBg.fillGradientStyle(0xffa500, 0xffa500, 0xff4500, 0xff4500, 1);
         btnBg.fillRoundedRect(0, 0, bgWidth, bgHeight, 10);
   
+        // 创建容器并将按钮背景和文本添加进去
         let playBtn = this.add.container(
             this.cameras.main.width / 2 - bgWidth / 2,
             this.cameras.main.height / 2 - bgHeight / 2
@@ -63,11 +64,12 @@ class MainMenu extends Phaser.Scene {
         playBtn.add([btnBg, playText]);
         playText.setPosition(bgWidth / 2, bgHeight / 2);
   
-        // 设置容器的尺寸后，直接使用默认的交互区域
+        // 设置容器大小
         playBtn.setSize(bgWidth, bgHeight);
-        playBtn.setInteractive(); // 或者： setInteractive(new Phaser.Geom.Rectangle(0, 0, bgWidth, bgHeight), Phaser.Geom.Rectangle.Contains);
+        // 设置交互区域为整个容器（区域从 (0,0) 开始）
+        playBtn.setInteractive(new Phaser.Geom.Rectangle(0, 0, bgWidth, bgHeight), Phaser.Geom.Rectangle.Contains);
   
-        // 鼠标指针移入时播放 selection 音效
+        // 鼠标移入时播放 selection 音效及缩放动画
         playBtn.on('pointerover', () => {
             this.sound.play('sfx-selection', { volume: 0.75 });
             this.tweens.add({
@@ -75,11 +77,8 @@ class MainMenu extends Phaser.Scene {
                 scaleX: 1.05,
                 scaleY: 1.05,
                 duration: 200,
-                ease: 'Linear',
-                onUpdate: () => {
-                    // 更新交互区域也可以使用 playBtn.getBounds() 自动匹配
-                    playBtn.input.hitArea.setTo(0, 0, bgWidth, bgHeight);
-                }
+                ease: 'Linear'
+                // 不再更新 hitArea
             });
         });
   
@@ -89,14 +88,11 @@ class MainMenu extends Phaser.Scene {
                 scaleX: 1,
                 scaleY: 1,
                 duration: 200,
-                ease: 'Linear',
-                onUpdate: () => {
-                    playBtn.input.hitArea.setTo(0, 0, bgWidth, bgHeight);
-                }
+                ease: 'Linear'
             });
         });
   
-        // 按钮按下时播放 confirm 音效
+        // 按钮按下时播放 confirm 音效并切换场景
         playBtn.on('pointerdown', () => {
             this.sound.play('sfx-confirm', { volume: 0.75 });
             this.scene.start('Tutorial');

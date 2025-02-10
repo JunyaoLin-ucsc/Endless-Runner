@@ -8,34 +8,34 @@ class Tutorial extends Phaser.Scene {
     }
   
     create() {
-        // 背景
+        // Display full-screen background
         this.add.image(
             this.cameras.main.width / 2,
             this.cameras.main.height / 2,
             'tutorial_bg'
-        ).setOrigin(0.5)
-         .setDisplaySize(this.cameras.main.width, this.cameras.main.height);
+        )
+        .setOrigin(0.5)
+        .setDisplaySize(this.cameras.main.width, this.cameras.main.height);
   
-        // 教程文本
+        // Updated instruction text in English with blue color
         let tutorialStr = 
-            "操作说明：\n" +
-            "1. 鼠标移动 -> 篮子只在平台上左右移动。\n" +
-            "2. 左键点击 -> 开合篮子（4帧动画）。\n" +
-            "3. 空格短/长按 -> 实现不同跳跃高度。\n" +
-            "4. “一物一生成” -> 每接住/漏接一个下落物后再生成下一个，\n" +
-            "   且下落物随机掉落且互不重叠！\n" +
-            "5. 炸弹/陨石/额外篮子 -> 随机掉落，误碰会损坏篮子；\n" +
-            "   额外篮子可增加篮子数量（概率较低）。\n" +
-            "6. 漏接的水果穿过平台后会弹跳+缩小消失，\n" +
-            "   漏接10次 -> 损坏1个篮子。篮子耗尽 -> GameOver。\n";
+            "Instructions:\n" +
+            "1. Move your mouse to control the basket's horizontal movement on the platform.\n" +
+            "2. Click to open or close the basket (4-frame animation).\n" +
+            "3. Falling objects are generated continuously at fixed intervals. As time passes, both their falling speed and density increase, and objects are spawned in a non-overlapping manner.\n" +
+            "4. Bombs, stones, and extra baskets also fall. Contact with them will damage your basket, while extra baskets can increase your basket count (rare chance).\n" +
+            "5. Missed fruits that pass through the platform will bounce and shrink away; missing 10 fruits will damage one basket. When all baskets are lost, the game is over.\n" +
+            "6. Collect coins (magnet power-ups) up to a maximum of 5. Press the E key to activate the magnet, which attracts fruits from the lower half of the screen to your basket.";
   
         let textConfig = {
             fontFamily: 'Arial',
             fontSize: '26px',
-            color: '#ffffff',
+            color: '#0000FF',  // Blue text
             align: 'left',
             wordWrap: { width: this.cameras.main.width - 80 }
         };
+  
+        // Center the instructions horizontally; position near the top (at 1/6 of the screen height)
         this.add.text(
             this.cameras.main.width / 2,
             this.cameras.main.height / 6,
@@ -43,7 +43,7 @@ class Tutorial extends Phaser.Scene {
             textConfig
         ).setOrigin(0.5, 0);
   
-        // 开始按钮
+        // Button configuration for starting the game
         let btnConfig = {
             fontFamily: 'Arial',
             fontSize: '40px',
@@ -63,5 +63,4 @@ class Tutorial extends Phaser.Scene {
             this.scene.start('Gameplay');
         });
     }
-  }
-  
+}

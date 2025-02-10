@@ -179,8 +179,9 @@ class Gameplay extends Phaser.Scene {
         this.timeText = this.add.text(20, 60, `Time: 0`, { fontSize: '32px', fill: '#fff' });
         this.basketText = this.add.text(20, 100, `Basket: ${this.basketCount}`, { fontSize: '32px', fill: '#fff' });
         this.missedText = this.add.text(20, this.gameHeight - 40, `Missed: ${this.missedFruits}`, { fontSize: '32px', fill: '#fff' });
-        // 新增：显示 coin 数量（放在左下角）
         this.coinText = this.add.text(20, this.gameHeight - 80, `Coin: ${this.coinCount}`, { fontSize: '32px', fill: '#fff' });
+        // 新增：显示磁铁剩余时间在右上角
+        this.magnetText = this.add.text(this.gameWidth - 220, 20, '', { fontSize: '32px', fill: '#fff' });
   
         // ========== 定时生成下落物 ==========
         this.time.addEvent({
@@ -188,30 +189,9 @@ class Gameplay extends Phaser.Scene {
             callback: () => { this.spawnFallingObject(); },
             loop: true
         });
-
-        // 添加左右边界 hitbox（宽度 1，高度为游戏高度）
-        this.leftHitbox = this.physics.add.staticSprite(0, this.gameHeight / 2, null)
-            .setDisplaySize(1, this.gameHeight);
-        this.leftHitbox.visible = false;
   
-        this.rightHitbox = this.physics.add.staticSprite(this.gameWidth, this.gameHeight / 2, null)
-            .setDisplaySize(1, this.gameHeight);
-        this.rightHitbox.visible = false;
+        // 删除了左右边缘 hitbox 相关代码
   
-        let fallingGroups = [this.fruitGroup, this.bombGroup, this.stoneGroup, this.extraBasketGroup, this.coinGroup];
-        fallingGroups.forEach(group => {
-            this.physics.add.collider(group, this.leftHitbox, (obj) => {
-                if (obj.body && typeof obj.body.setVelocityX === 'function') {
-                    obj.body.setVelocityX(0);
-                }
-            });
-            this.physics.add.collider(group, this.rightHitbox, (obj) => {
-                if (obj.body && typeof obj.body.setVelocityX === 'function') {
-                    obj.body.setVelocityX(0);
-                }
-            });
-        });
-
         // 新增：监听 E 键，用于激活磁铁效果
         this.eKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E);
         this.magnetActive = false;
@@ -257,23 +237,32 @@ class Gameplay extends Phaser.Scene {
             }
         });
       
-        // 新增：检测 E 键按下并激活磁铁效果（持续 10 秒）
+        // 磁铁效果：检测 E 键按下并激活（持续 10 秒）
         if (Phaser.Input.Keyboard.JustDown(this.eKey) && !this.magnetActive && this.coinCount > 0) {
             this.coinCount--;
             this.coinText.setText(`Coin: ${this.coinCount}`);
             this.magnetActive = true;
-            // 10秒后关闭磁铁效果
-            this.time.delayedCall(10000, () => {
-                this.magnetActive = false;
-            });
+            this.magnetEndTime = this.timeElapsed + 10; // 10秒后关闭磁铁效果
         }
       
-        // 新增：如果磁铁效果激活，遍历 fruitGroup 中处于下半屏的水果自动吸附
+        // 更新磁铁剩余时间显示
+        if (this.magnetActive) {
+            let remaining = Math.ceil(this.magnetEndTime - this.timeElapsed);
+            if (remaining <= 0) {
+                this.magnetActive = false;
+                this.magnetText.setText('');
+            } else {
+                this.magnetText.setText(`Magnet: ${remaining}s`);
+            }
+        } else {
+            this.magnetText.setText('');
+        }
+      
+        // 如果磁铁效果激活，遍历 fruitGroup 中处于下半屏的水果自动吸附到篮子
         if (this.magnetActive) {
             this.fruitGroup.getChildren().forEach(fruit => {
-                // 仅对屏幕下半部分的水果进行吸附，并且防止重复处理（用自定义属性 isMagnetized 标记）
                 if (fruit.y > this.gameHeight / 2 && !fruit.isMagnetized) {
-                    fruit.isMagnetized = true; // 标记该水果已被磁铁处理
+                    fruit.isMagnetized = true;
                     this.tweens.add({
                         targets: fruit,
                         x: this.basket.x,
@@ -281,7 +270,6 @@ class Gameplay extends Phaser.Scene {
                         duration: 500,
                         ease: 'Linear',
                         onComplete: () => {
-                            // 吸附到篮子后，算作成功拾取
                             this.handleCatchFruit(this.basket, fruit);
                         }
                     });
@@ -331,9 +319,13 @@ class Gameplay extends Phaser.Scene {
             type = 'fruit';
         }
         
-        // 如果篮子数已达到10，则 extraBasket 不掉落，改为 coin
+        // 如果篮子数已达到10，则 extraBasket 改为 coin
         if (type === 'extraBasket' && this.basketCount >= 10) {
             type = 'coin';
+        }
+        // 新增：如果 coin 数已达到5，则不掉落 coin，改为 fruit
+        if (type === 'coin' && this.coinCount >= 5) {
+            type = 'fruit';
         }
         
         let step = Math.floor(this.timeElapsed / 20);
@@ -354,7 +346,7 @@ class Gameplay extends Phaser.Scene {
             newObj = this.coinGroup.create(xPos, 0, 'coin');
         }
         
-        // 设置缩放：对于 fruit 类型，如果是 apple、banana、orange、watermelon，则乘以0.75；coin 按 coin 逻辑
+        // 设置缩放：对于 fruit 类型，如果是 apple、banana、orange、watermelon，则乘以 0.75；coin 按 coin 逻辑
         if (type === 'fruit') {
             let baseScale = Phaser.Math.FloatBetween(3, 3.5);
             if (fruitKey === 'apple' || fruitKey === 'banana' || fruitKey === 'orange' || fruitKey === 'watermelon') {
@@ -362,7 +354,6 @@ class Gameplay extends Phaser.Scene {
             }
             newObj.setScale(baseScale);
         } else if (type === 'coin') {
-            // 让 coin 的尺寸与西瓜类似，即使用与 fruit 同范围再乘以 0.75
             let coinScale = Phaser.Math.FloatBetween(3, 3.5) * 0.75;
             newObj.setScale(coinScale);
         } else {
@@ -423,7 +414,7 @@ class Gameplay extends Phaser.Scene {
             newObj.body.setOffset(newObj.body.offset.x, newObj.body.offset.y + 5);
         }
     }
-    
+      
     toggleBasketLid() {
         if (!this.isBasketClosed) {
             this.isBasketClosed = true;
@@ -437,7 +428,7 @@ class Gameplay extends Phaser.Scene {
     }
     
     handleCatchFruit(basket, fruit) {
-        if (this.isBasketClosed) { return; }
+        if (!this.magnetActive && this.isBasketClosed) { return; }
         this.score++;
         this.scoreText.setText(`Score: ${this.score}`);
         fruit.destroy();
@@ -493,7 +484,7 @@ class Gameplay extends Phaser.Scene {
     
     handleCoinCollision(basket, coin) {
         coin.destroy();
-        if (this.coinCount < 10) {
+        if (this.coinCount < 5) {
             this.coinCount++;
             this.coinText.setText(`Coin: ${this.coinCount}`);
         }
@@ -535,8 +526,7 @@ class Gameplay extends Phaser.Scene {
     
     // 新增：利用 Graphics API 动态生成爆炸效果（如果需要）
     addExplosion(x, y) {
-        // 如果你没有爆炸图片，可以用简单粒子实现
-        let explosion = this.add.particles('coin'); // 这里复用 coin 作为简单效果，可替换为其他纹理
+        let explosion = this.add.particles('coin');
         explosion.createEmitter({
             x: x,
             y: y,

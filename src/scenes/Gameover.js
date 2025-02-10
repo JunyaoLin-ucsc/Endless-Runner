@@ -81,7 +81,7 @@ class Gameover extends Phaser.Scene {
         this.add.text(
             this.cameras.main.width / 2,
             this.cameras.main.height - 60,
-            'Created by YourName\nThanks for playing!',
+            'Created by Junyao\nThanks for playing!',
             { fontFamily: 'Arial', fontSize: '24px', color: '#ddd', align: 'center' }
         ).setOrigin(0.5);
     }

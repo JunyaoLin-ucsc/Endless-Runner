@@ -15,7 +15,7 @@ class MainMenu extends Phaser.Scene {
         .setOrigin(0.5)
         .setDisplaySize(this.cameras.main.width, this.cameras.main.height);
   
-        // 添加标题文本及阴影和闪烁效果
+        // 添加标题文本及阴影和淡淡闪烁效果
         let titleStyle = {
             fontFamily: 'Georgia, serif',
             fontSize: '80px',
@@ -43,17 +43,16 @@ class MainMenu extends Phaser.Scene {
         // 定义按钮尺寸
         let btnWidth = 300, btnHeight = 80;
   
-        // 创建一个容器来做按钮（位置居中）
+        // 创建按钮容器时增加偏移：整体向右平移80像素，向下平移30像素
         let buttonContainer = this.add.container(
-            this.cameras.main.width / 2 - btnWidth / 2,
-            this.cameras.main.height / 2 - btnHeight / 2
+            this.cameras.main.width / 2 - btnWidth / 2 + 80,
+            this.cameras.main.height / 2 - btnHeight / 2 + 30
         );
   
-        // 在容器中绘制一个圆角矩形作为按钮背景
+        // 绘制按钮背景（圆角矩形带白色边框）
         let buttonBg = this.add.graphics();
         buttonBg.fillStyle(0xFF4500, 1);
         buttonBg.fillRoundedRect(0, 0, btnWidth, btnHeight, 15);
-        // 添加一个白色边框
         buttonBg.lineStyle(4, 0xffffff, 1);
         buttonBg.strokeRoundedRect(0, 0, btnWidth, btnHeight, 15);
   
@@ -70,11 +69,11 @@ class MainMenu extends Phaser.Scene {
         // 将背景和文字添加到按钮容器中
         buttonContainer.add([buttonBg, buttonText]);
   
-        // 设置容器大小并用从 (0,0) 开始的 hitArea 作为交互区域
+        // 设置容器大小，并使用从 (0,0) 开始的 hitArea 作为交互区域
         buttonContainer.setSize(btnWidth, btnHeight);
         buttonContainer.setInteractive(new Phaser.Geom.Rectangle(0, 0, btnWidth, btnHeight), Phaser.Geom.Rectangle.Contains);
   
-        // 鼠标移入时播放 selection 音效并做缩放动画
+        // 鼠标移入时播放 selection 音效及缩放动画
         buttonContainer.on('pointerover', () => {
             this.sound.play('sfx-selection', { volume: 0.75 });
             this.tweens.add({
@@ -101,7 +100,7 @@ class MainMenu extends Phaser.Scene {
             this.scene.start('Tutorial');
         });
   
-        // 为按钮添加一个淡淡的闪烁效果：alpha 在 1 与 0.95 之间缓慢变化
+        // 为按钮添加一个淡淡的闪烁效果（alpha 在 1 与 0.95 之间缓慢变化）
         this.tweens.add({
             targets: buttonContainer,
             alpha: { from: 1, to: 0.95 },

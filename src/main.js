@@ -2,7 +2,9 @@ let config = {
   type: Phaser.AUTO,
   width: 768,
   height: 1024,
-  pixelArt: false,  // 使用高清渲染
+  pixelArt: true,  // 使用高清渲染
+  antialias: false,
+  resolution: 2,
   scene: [ MainMenu, Tutorial, Gameplay, Gameover ],
   physics: {
       default: 'arcade',

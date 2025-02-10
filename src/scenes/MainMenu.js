@@ -2,14 +2,18 @@ class MainMenu extends Phaser.Scene {
     constructor() {
         super("MainMenu");
     }
-
+  
     // All shared assets (images, audio, etc.) are loaded in the Preloader scene.
     create() {
-        // Add background image filling the screen
-        this.add.image(this.cameras.main.centerX, this.cameras.main.centerY, 'menu_bg')
-            .setOrigin(0.5)
-            .setDisplaySize(this.cameras.main.width, this.cameras.main.height);
-
+        // Add background image (fills the screen)
+        this.add.image(
+            this.cameras.main.width / 2,
+            this.cameras.main.height / 2,
+            'menu_bg'
+        )
+        .setOrigin(0.5)
+        .setDisplaySize(this.cameras.main.width, this.cameras.main.height);
+  
         // Create title text with a gentle alpha tween
         let titleStyle = {
             fontFamily: 'Georgia, serif',
@@ -20,7 +24,7 @@ class MainMenu extends Phaser.Scene {
             align: 'center'
         };
         let titleText = this.add.text(
-            this.cameras.main.centerX,
+            this.cameras.main.width / 2,
             this.cameras.main.height / 4,
             'Fruity Picker',
             titleStyle
@@ -34,66 +38,45 @@ class MainMenu extends Phaser.Scene {
             repeat: -1,
             ease: 'Sine.easeInOut'
         });
-
-        // Button parameters
-        let btnWidth = 300;
-        let btnHeight = 80;
-        let centerX = this.cameras.main.centerX;
-        let centerY = this.cameras.main.centerY;
-
-        // Create a container for the button and position it so its center is at (centerX, centerY)
-        let buttonContainer = this.add.container(centerX - btnWidth / 2, centerY - btnHeight / 2);
-
-        // Draw a rounded rectangle as the button background
-        let buttonBg = this.add.graphics();
-        buttonBg.fillStyle(0xFF4500, 1);
-        buttonBg.fillRoundedRect(0, 0, btnWidth, btnHeight, 15);
-        buttonBg.lineStyle(4, 0xffffff, 1);
-        buttonBg.strokeRoundedRect(0, 0, btnWidth, btnHeight, 15);
-
-        // Create the button text (centered)
-        let btnTextStyle = {
-            fontFamily: '"Press Start 2P", monospace',
-            fontSize: '32px',
-            color: '#ffffff',
+  
+        // Button configuration (exactly the same as in Tutorial.js)
+        let btnConfig = {
+            fontFamily: 'Arial',
+            fontSize: '40px',
+            color: '#fff',
+            backgroundColor: '#008800',
+            padding: { x: 20, y: 10 },
             align: 'center'
         };
-        let buttonText = this.add.text(btnWidth / 2, btnHeight / 2, "PLAY", btnTextStyle)
-            .setOrigin(0.5);
-
-        // Add the background and text to the container
-        buttonContainer.add([buttonBg, buttonText]);
-        buttonContainer.setSize(btnWidth, btnHeight);
-
-        // Define a custom hit area callback that converts world coordinates into local coordinates
-        // (this “undoes” any scaling the container might have). For now, our container’s scale is 1.
-        let customHitCallback = function(hitArea, x, y, gameObject) {
-            let localX = (x - gameObject.x) / gameObject.scaleX;
-            let localY = (y - gameObject.y) / gameObject.scaleY;
-            return Phaser.Geom.Rectangle.Contains(hitArea, localX, localY);
-        };
-
-        // Set the container's interactive area using the custom callback.
-        // The hit area is a rectangle starting at (0,0) with width=btnWidth and height=btnHeight.
-        buttonContainer.setInteractive(
-            new Phaser.Geom.Rectangle(0, 0, btnWidth, btnHeight),
-            customHitCallback
-        );
-
-        // Add pointer events
-        buttonContainer.on('pointerover', () => {
-            // Play selection sound at 75% volume
-            this.sound.play('sfx-selection', { volume: 0.75 });
-            // (If desired, you can add a tween here to slightly scale up the button)
+  
+        // Create the "GAME START" button text at the same position as in Tutorial.js
+        let startBtn = this.add.text(
+            this.cameras.main.width / 2,
+            this.cameras.main.height - 150,
+            'GAME START',
+            btnConfig
+        )
+        .setOrigin(0.5)
+        .setInteractive();
+  
+        // Add event handlers (matching Tutorial.js)
+        startBtn.on('pointerover', () => {
+            this.sound.play('sfx-selection');
+            startBtn.setScale(1.05);
         });
-        buttonContainer.on('pointerdown', () => {
-            this.sound.play('sfx-confirm', { volume: 0.75 });
+  
+        startBtn.on('pointerout', () => {
+            startBtn.setScale(1);
+        });
+  
+        startBtn.on('pointerdown', () => {
+            this.sound.play('sfx-confirm');
             this.scene.start('Tutorial');
         });
-
-        // Add bottom copyright text
+  
+        // Bottom copyright text remains the same
         this.add.text(
-            this.cameras.main.centerX,
+            this.cameras.main.width / 2,
             this.cameras.main.height - 40,
             'Created by Junyao',
             { fontFamily: 'Arial', fontSize: '24px', color: '#dddddd' }

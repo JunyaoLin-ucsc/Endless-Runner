@@ -50,7 +50,7 @@ class Tutorial extends Phaser.Scene {
             fontFamily: 'Arial',
             fontSize: '40px',
             color: '#fff',
-            backgroundColor: '#008800',
+            backgroundColor: '#b58900',
             padding: { x: 20, y: 10 },
             align: 'center'
         };

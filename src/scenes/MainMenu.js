@@ -6,6 +6,7 @@ class MainMenu extends Phaser.Scene {
     // preload() 已在 Preloader 中加载资源
   
     create() {
+        // 添加背景图像
         this.add.image(
             this.cameras.main.width / 2,
             this.cameras.main.height / 2,
@@ -14,6 +15,7 @@ class MainMenu extends Phaser.Scene {
         .setOrigin(0.5)
         .setDisplaySize(this.cameras.main.width, this.cameras.main.height);
   
+        // 添加标题文本
         let titleStyle = {
             fontFamily: 'Georgia, serif',
             fontSize: '80px',
@@ -38,66 +40,43 @@ class MainMenu extends Phaser.Scene {
             ease: 'Sine.easeInOut'
         });
   
+        // 创建按钮（直接用文本对象）
+        // 为了让按钮区域足够大，我们使用 padding 参数
         let btnStyle = {
             fontFamily: '"Press Start 2P", monospace',
             fontSize: '40px',
             color: '#ffffff',
-            stroke: '#000000',
-            strokeThickness: 2,
+            backgroundColor: '#ff4500', // 背景色可以根据需要调整
+            padding: { x: 20, y: 10 },
             align: 'center'
         };
-        let playText = this.add.text(0, 0, 'PLAY', btnStyle).setOrigin(0.5);
-        let paddingX = 20, paddingY = 10;
-        let baseBgWidth = playText.width + paddingX * 2;
-        let bgHeight = playText.height + paddingY * 2;
-        let bgWidth = baseBgWidth;
   
-        let btnBg = this.add.graphics();
-        btnBg.fillGradientStyle(0xffa500, 0xffa500, 0xff4500, 0xff4500, 1);
-        btnBg.fillRoundedRect(0, 0, bgWidth, bgHeight, 10);
+        let playBtn = this.add.text(
+            this.cameras.main.width / 2,
+            this.cameras.main.height / 2,
+            'PLAY',
+            btnStyle
+        ).setOrigin(0.5)
+         .setInteractive();  // 使用文本自带的交互区域
   
-        // 创建容器并将按钮背景和文本添加进去
-        let playBtn = this.add.container(
-            this.cameras.main.width / 2 - bgWidth / 2,
-            this.cameras.main.height / 2 - bgHeight / 2
-        );
-        playBtn.add([btnBg, playText]);
-        playText.setPosition(bgWidth / 2, bgHeight / 2);
-  
-        // 设置容器大小
-        playBtn.setSize(bgWidth, bgHeight);
-        // 设置交互区域为整个容器（区域从 (0,0) 开始）
-        playBtn.setInteractive(new Phaser.Geom.Rectangle(0, 0, bgWidth, bgHeight), Phaser.Geom.Rectangle.Contains);
-  
-        // 鼠标移入时播放 selection 音效及缩放动画
+        // 鼠标指针移入时触发 selection 音效并缩放文本
         playBtn.on('pointerover', () => {
             this.sound.play('sfx-selection', { volume: 0.75 });
-            this.tweens.add({
-                targets: playBtn,
-                scaleX: 1.05,
-                scaleY: 1.05,
-                duration: 200,
-                ease: 'Linear'
-                // 不再更新 hitArea
-            });
+            playBtn.setScale(1.05);
         });
   
+        // 鼠标指针移出时恢复原始缩放
         playBtn.on('pointerout', () => {
-            this.tweens.add({
-                targets: playBtn,
-                scaleX: 1,
-                scaleY: 1,
-                duration: 200,
-                ease: 'Linear'
-            });
+            playBtn.setScale(1);
         });
   
-        // 按钮按下时播放 confirm 音效并切换场景
+        // 按钮按下时触发 confirm 音效并切换场景
         playBtn.on('pointerdown', () => {
             this.sound.play('sfx-confirm', { volume: 0.75 });
             this.scene.start('Tutorial');
         });
   
+        // 添加底部版权信息
         this.add.text(
             this.cameras.main.width / 2,
             this.cameras.main.height - 40,

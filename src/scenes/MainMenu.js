@@ -43,10 +43,11 @@ class MainMenu extends Phaser.Scene {
         // 定义按钮尺寸
         let btnWidth = 300, btnHeight = 80;
   
-        // 创建按钮容器时增加偏移：整体向右平移80像素，向下平移30像素
+        // 创建按钮容器（初始位置以容器的左上角为基准）
+        // 此处我们暂时将容器放置于屏幕中央（以后通过调整交互区域实现偏移）
         let buttonContainer = this.add.container(
-            this.cameras.main.width / 2 + btnWidth / 2 + 80,
-            this.cameras.main.height / 2 + btnHeight / 2 + 30
+            this.cameras.main.width / 2 - btnWidth / 2,
+            this.cameras.main.height / 2 - btnHeight / 2
         );
   
         // 绘制按钮背景（圆角矩形带白色边框）
@@ -69,13 +70,21 @@ class MainMenu extends Phaser.Scene {
         // 将背景和文字添加到按钮容器中
         buttonContainer.add([buttonBg, buttonText]);
   
-        // 设置容器大小，并使用从 (0,0) 开始的 hitArea 作为交互区域
+        // 设置容器大小
         buttonContainer.setSize(btnWidth, btnHeight);
+  
+        // 设置交互区域为整个容器（hitArea 坐标默认从 (0,0) 开始）
         buttonContainer.setInteractive(new Phaser.Geom.Rectangle(0, 0, btnWidth, btnHeight), Phaser.Geom.Rectangle.Contains);
   
-        // 鼠标移入时播放 selection 音效及缩放动画
+        // 调整 hitArea 的坐标，向右平移 80 像素、向下平移 30 像素
+        // 注意：hitArea 是一个 Phaser.Geom.Rectangle 对象，直接修改其 x 和 y 值即可
+        buttonContainer.input.hitArea.x += 80;
+        buttonContainer.input.hitArea.y += 30;
+  
+        // 为按钮添加鼠标移入、移出、点击事件
         buttonContainer.on('pointerover', () => {
             this.sound.play('sfx-selection', { volume: 0.75 });
+            // 使用 tween 缩放按钮（注意不要修改 hitArea，这里只改变显示效果）
             this.tweens.add({
                 targets: buttonContainer,
                 scale: 1.05,
@@ -84,7 +93,6 @@ class MainMenu extends Phaser.Scene {
             });
         });
   
-        // 鼠标移出时恢复原始大小
         buttonContainer.on('pointerout', () => {
             this.tweens.add({
                 targets: buttonContainer,
@@ -94,13 +102,12 @@ class MainMenu extends Phaser.Scene {
             });
         });
   
-        // 按钮按下时播放 confirm 音效并切换到 Tutorial 场景
         buttonContainer.on('pointerdown', () => {
             this.sound.play('sfx-confirm', { volume: 0.75 });
             this.scene.start('Tutorial');
         });
   
-        // 为按钮添加一个淡淡的闪烁效果（alpha 在 1 与 0.95 之间缓慢变化）
+        // 为按钮添加一个淡淡的闪烁效果：alpha 在 1 与 0.95 之间缓慢变化
         this.tweens.add({
             targets: buttonContainer,
             alpha: { from: 1, to: 0.95 },

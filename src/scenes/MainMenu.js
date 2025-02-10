@@ -2,20 +2,16 @@ class MainMenu extends Phaser.Scene {
     constructor() {
         super("MainMenu");
     }
-  
-    // preload() 已在 Preloader 中加载资源
-  
+
+    // All shared assets (images, audio, etc.) are loaded in the Preloader scene.
+
     create() {
-        // 添加背景图像
-        this.add.image(
-            this.cameras.main.width / 2,
-            this.cameras.main.height / 2,
-            'menu_bg'
-        )
-        .setOrigin(0.5)
-        .setDisplaySize(this.cameras.main.width, this.cameras.main.height);
-  
-        // 添加标题文本及阴影和淡淡闪烁效果
+        // Add background image (fills screen)
+        this.add.image(this.cameras.main.centerX, this.cameras.main.centerY, 'menu_bg')
+            .setOrigin(0.5)
+            .setDisplaySize(this.cameras.main.width, this.cameras.main.height);
+
+        // Create title text with a gentle alpha tween
         let titleStyle = {
             fontFamily: 'Georgia, serif',
             fontSize: '80px',
@@ -24,12 +20,8 @@ class MainMenu extends Phaser.Scene {
             strokeThickness: 8,
             align: 'center'
         };
-        let titleText = this.add.text(
-            this.cameras.main.width / 2,
-            this.cameras.main.height / 4,
-            'Fruity Picker',
-            titleStyle
-        ).setOrigin(0.5);
+        let titleText = this.add.text(this.cameras.main.centerX, this.cameras.main.height / 4, 'Fruity Picker', titleStyle)
+            .setOrigin(0.5);
         titleText.setShadow(5, 5, 'rgba(0,0,0,0.7)', 10, true, true);
         this.tweens.add({
             targets: titleText,
@@ -39,24 +31,25 @@ class MainMenu extends Phaser.Scene {
             repeat: -1,
             ease: 'Sine.easeInOut'
         });
-  
-        // 定义按钮尺寸
-        let btnWidth = 300, btnHeight = 80;
-  
-        // 创建按钮容器时增加偏移：整体向右平移80像素，向下平移30像素
-        let buttonContainer = this.add.container(
-            this.cameras.main.width / 2 + btnWidth / 2 + 80,
-            this.cameras.main.height / 2 + btnHeight / 2 + 30
-        );
-  
-        // 绘制按钮背景（圆角矩形带白色边框）
+
+        // Button parameters
+        let btnWidth = 300;
+        let btnHeight = 80;
+        // Position: center of screen
+        let centerX = this.cameras.main.centerX;
+        let centerY = this.cameras.main.centerY;
+
+        // Create a container for the button
+        let buttonContainer = this.add.container(0, 0);
+
+        // Draw a rounded rectangle as the button background
         let buttonBg = this.add.graphics();
         buttonBg.fillStyle(0xFF4500, 1);
         buttonBg.fillRoundedRect(0, 0, btnWidth, btnHeight, 15);
         buttonBg.lineStyle(4, 0xffffff, 1);
         buttonBg.strokeRoundedRect(0, 0, btnWidth, btnHeight, 15);
-  
-        // 创建按钮文字
+
+        // Create the button text (centered)
         let btnTextStyle = {
             fontFamily: '"Press Start 2P", monospace',
             fontSize: '32px',
@@ -64,16 +57,45 @@ class MainMenu extends Phaser.Scene {
             align: 'center'
         };
         let buttonText = this.add.text(btnWidth / 2, btnHeight / 2, "PLAY", btnTextStyle)
-                                .setOrigin(0.5);
-  
-        // 将背景和文字添加到按钮容器中
+            .setOrigin(0.5);
+
+        // Add both to the container
         buttonContainer.add([buttonBg, buttonText]);
-  
-        // 设置容器大小，并使用从 (0,0) 开始的 hitArea 作为交互区域
         buttonContainer.setSize(btnWidth, btnHeight);
-        buttonContainer.setInteractive(new Phaser.Geom.Rectangle(0, 0, btnWidth, btnHeight), Phaser.Geom.Rectangle.Contains);
-  
-        // 鼠标移入时播放 selection 音效及缩放动画
+
+        // Place the container so its center is at (centerX, centerY)
+        buttonContainer.setPosition(centerX - btnWidth / 2, centerY - btnHeight / 2);
+
+        // Define a custom hitArea callback that removes container scale from the pointer coordinates.
+        // This callback receives (hitArea, x, y, gameObject) where x and y are in world space.
+        let customHitCallback = function (hitArea, x, y, gameObject) {
+            // Convert the pointer coordinates to local container coordinates.
+            // Since we are not translating within the container, subtract its position.
+            let localX = x - gameObject.x;
+            let localY = y - gameObject.y;
+            // Undo any scale applied to the container:
+            localX /= gameObject.scaleX;
+            localY /= gameObject.scaleY;
+            return Phaser.Geom.Rectangle.Contains(hitArea, localX, localY);
+        };
+
+        // Set the container's interactive area with the custom callback.
+        buttonContainer.setInteractive(
+            new Phaser.Geom.Rectangle(0, 0, btnWidth, btnHeight),
+            customHitCallback
+        );
+
+        // (Optional) Apply a slight flashing tween to the button container.
+        this.tweens.add({
+            targets: buttonContainer,
+            alpha: { from: 1, to: 0.95 },
+            duration: 1500,
+            yoyo: true,
+            repeat: -1,
+            ease: 'Sine.easeInOut'
+        });
+
+        // Add pointer event handlers on the container.
         buttonContainer.on('pointerover', () => {
             this.sound.play('sfx-selection', { volume: 0.75 });
             this.tweens.add({
@@ -83,8 +105,6 @@ class MainMenu extends Phaser.Scene {
                 ease: 'Linear'
             });
         });
-  
-        // 鼠标移出时恢复原始大小
         buttonContainer.on('pointerout', () => {
             this.tweens.add({
                 targets: buttonContainer,
@@ -93,29 +113,16 @@ class MainMenu extends Phaser.Scene {
                 ease: 'Linear'
             });
         });
-  
-        // 按钮按下时播放 confirm 音效并切换到 Tutorial 场景
         buttonContainer.on('pointerdown', () => {
             this.sound.play('sfx-confirm', { volume: 0.75 });
             this.scene.start('Tutorial');
         });
-  
-        // 为按钮添加一个淡淡的闪烁效果（alpha 在 1 与 0.95 之间缓慢变化）
-        this.tweens.add({
-            targets: buttonContainer,
-            alpha: { from: 1, to: 0.95 },
-            duration: 1500,
-            yoyo: true,
-            repeat: -1,
-            ease: 'Sine.easeInOut'
-        });
-  
-        // 添加底部版权信息
-        this.add.text(
-            this.cameras.main.width / 2,
-            this.cameras.main.height - 40,
-            'Created by Junyao',
-            { fontFamily: 'Arial', fontSize: '24px', color: '#dddddd' }
-        ).setOrigin(0.5);
+
+        // Add bottom copyright text
+        this.add.text(this.cameras.main.centerX, this.cameras.main.height - 40, 'Created by Junyao', {
+            fontFamily: 'Arial',
+            fontSize: '24px',
+            color: '#dddddd'
+        }).setOrigin(0.5);
     }
 }

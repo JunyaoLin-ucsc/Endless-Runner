@@ -45,7 +45,7 @@ class Gameover extends Phaser.Scene {
         let statStyle = {
             fontFamily: 'Arial',
             fontSize: '40px',
-            color: '#ffffff'
+            color: '#800080'
         };
         this.add.text(
             this.cameras.main.width / 2,

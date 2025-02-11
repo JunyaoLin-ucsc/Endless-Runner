@@ -6,8 +6,8 @@ class Gameplay extends Phaser.Scene {
     // preload() 部分由 Preloader 加载所有资源
   
     create() {
-        // 禁用鼠标输入，确保鼠标不会影响篮子控制
-        this.input.mouse.enabled = true;
+        // 禁用鼠标输入，确保只使用键盘控制
+        this.input.mouse.enabled = false;
   
         this.gameWidth  = this.cameras.main.width;
         this.gameHeight = this.cameras.main.height;
@@ -64,7 +64,7 @@ class Gameplay extends Phaser.Scene {
         this.basket.setBounce(0);
         this.physics.add.collider(this.basket, this.platform);
   
-        // 移除鼠标控制（已注释掉）
+        // 原来的鼠标控制已移除
         // this.input.on('pointermove', (pointer) => {
         //     this.basket.x = Phaser.Math.Clamp(pointer.x, 40, this.gameWidth - 40);
         // });
@@ -74,7 +74,7 @@ class Gameplay extends Phaser.Scene {
         // E 键功能保持不变
         this.eKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E);
   
-        // 初始化键盘控制：使用 A 和 D 键控制篮子左右移动
+        // 初始化键盘控制（A 和 D 键控制篮子左右移动）
         this.initKeyboardControls();
   
         this.fruitGroup = this.physics.add.group();
@@ -145,11 +145,10 @@ class Gameplay extends Phaser.Scene {
         });
     }
   
-    // 在 create() 内直接定义 initKeyboardControls 方法
     initKeyboardControls() {
         this.aKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
         this.dKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
-        // 将初始移动速度提高到 500 像素/秒
+        // 初始移动速度设置为 1000 像素/秒
         this.basketSpeed = 1000;
         // 第一次加速在 30 秒后
         this.nextSpeedIncreaseTime = 30;
@@ -160,9 +159,9 @@ class Gameplay extends Phaser.Scene {
         this.timeElapsed += dt;
         this.timeText.setText(`Time: ${Math.floor(this.timeElapsed)}`);
   
-        // 每 30 秒增加篮子移动速度，每次增加 30 像素/秒
+        // 每 30 秒增加篮子移动速度，每次增加 90 像素/秒
         if (this.timeElapsed >= this.nextSpeedIncreaseTime) {
-            this.basketSpeed += 150;
+            this.basketSpeed += 90;
             this.nextSpeedIncreaseTime += 30;
         }
   
@@ -279,8 +278,15 @@ class Gameplay extends Phaser.Scene {
             attempts++;
         } while (overlap && attempts < maxAttempts);
         
-        let rand = Phaser.Math.Between(1, 100);
+        // 修改：根据游戏经过的时间，每 30 秒增加一次掉落速度，
+        // 增幅为 10 像素/秒，最多增加到 210 秒（step 最大为 7）
+        let step = Math.min(Math.floor(this.timeElapsed / 30), 7);
+        let curSpeed = this.baseFallSpeed + (step * 10);
+        
+        let newObj;
+        let fruitKey;
         let type;
+        let rand = Phaser.Math.Between(1, 100);
         if (rand <= 35) {
             type = 'fruit';
         } else if (rand <= 60) {
@@ -302,11 +308,6 @@ class Gameplay extends Phaser.Scene {
             type = 'fruit';
         }
         
-        let step = Math.floor(this.timeElapsed / 20);
-        let curSpeed = this.baseFallSpeed + (step * 20);
-        
-        let newObj;
-        let fruitKey;
         if (type === 'fruit') {
             fruitKey = Phaser.Utils.Array.GetRandom(['apple', 'banana', 'orange', 'watermelon', 'strawberry']);
             newObj = this.fruitGroup.create(xPos, 0, fruitKey);
@@ -335,54 +336,52 @@ class Gameplay extends Phaser.Scene {
         
         newObj.rotation = Phaser.Math.FloatBetween(-0.1, 0.1);
         newObj.body.setSize(16, 16, true);
-        newObj.body.setVelocityY(curSpeed + Phaser.Math.Between(0, 50));
+        newObj.body.setVelocityY(curSpeed + Phaser.Math.Between(0, 30));
         newObj.body.setVelocityX(Phaser.Math.Between(-20, 20));
         
         let delay = Phaser.Math.Between(0, 1000);
         this.time.delayedCall(delay, () => {
-            newObj.body.setVelocityY(curSpeed + Phaser.Math.Between(0, 50));
+            newObj.body.setVelocityY(curSpeed + Phaser.Math.Between(0, 30));
         });
         
+        // 保持原来的掉落密度代码不变
         if (this.timeElapsed >= 100 && type === 'fruit') {
-            // 每隔 100 秒增加 1 组，最多增加 2 组
             let extraFruitCount = Math.min(Math.floor(this.timeElapsed / 100), 2);
             for (let i = 0; i < extraFruitCount; i++) {
-                 let extraXPos = Phaser.Math.Between(margin, this.gameWidth - margin);
-                 let extraAttempts = 0;
-                 while (Math.abs(extraXPos - xPos) < 50 && extraAttempts < 10) {
-                     extraXPos = Phaser.Math.Between(margin, this.gameWidth - margin);
-                     extraAttempts++;
-                 }
-                 let extraFruitKey = Phaser.Utils.Array.GetRandom(['apple', 'banana', 'orange', 'watermelon', 'strawberry']);
-                 let extraObj = this.fruitGroup.create(extraXPos, 0, extraFruitKey);
-                 let extraScale = Phaser.Math.FloatBetween(3, 3.5);
-                 if (extraFruitKey === 'apple' || extraFruitKey === 'banana' || extraFruitKey === 'orange' || extraFruitKey === 'watermelon') {
-                     extraScale *= 0.75;
-                 }
-                 extraObj.setScale(extraScale);
-                 extraObj.body.setSize(16, 16, true);
-                 extraObj.body.setVelocityY(curSpeed + Phaser.Math.Between(0, 50));
-                 extraObj.body.setVelocityX(Phaser.Math.Between(-20, 20));
+                let extraXPos = Phaser.Math.Between(margin, this.gameWidth - margin);
+                let extraAttempts = 0;
+                while (Math.abs(extraXPos - xPos) < 50 && extraAttempts < 10) {
+                    extraXPos = Phaser.Math.Between(margin, this.gameWidth - margin);
+                    extraAttempts++;
+                }
+                let extraFruitKey = Phaser.Utils.Array.GetRandom(['apple', 'banana', 'orange', 'watermelon', 'strawberry']);
+                let extraObj = this.fruitGroup.create(extraXPos, 0, extraFruitKey);
+                let extraScale = Phaser.Math.FloatBetween(3, 3.5);
+                if (extraFruitKey === 'apple' || extraFruitKey === 'banana' || extraFruitKey === 'orange' || extraFruitKey === 'watermelon') {
+                    extraScale *= 0.75;
+                }
+                extraObj.setScale(extraScale);
+                extraObj.body.setSize(16, 16, true);
+                extraObj.body.setVelocityY(curSpeed + Phaser.Math.Between(0, 30));
+                extraObj.body.setVelocityX(Phaser.Math.Between(-20, 20));
             }
         }
         
-        // 针对陨石掉落密度的增加（仅修改这一部分）
         if (this.timeElapsed >= 100 && type === 'stone') {
-            // 每隔 100 秒增加 1 组，最多增加 2 组
             let extraStoneCount = Math.min(Math.floor(this.timeElapsed / 100), 2);
             for (let i = 0; i < extraStoneCount; i++) {
-                 let extraXPos = Phaser.Math.Between(margin, this.gameWidth - margin);
-                 let extraAttempts = 0;
-                 while (Math.abs(extraXPos - xPos) < 50 && extraAttempts < 10) {
-                     extraXPos = Phaser.Math.Between(margin, this.gameWidth - margin);
-                     extraAttempts++;
-                 }
-                 let extraObj = this.stoneGroup.create(extraXPos, 0, 'stone');
-                 extraObj.setScale(Phaser.Math.FloatBetween(3, 3.5));
-                 extraObj.body.setSize(16, 16, true);
-                 extraObj.body.setVelocityY(curSpeed + Phaser.Math.Between(0, 50));
-                 extraObj.body.setVelocityX(Phaser.Math.Between(-20, 20));
-                 extraObj.body.setOffset(extraObj.body.offset.x, extraObj.body.offset.y + 10);
+                let extraXPos = Phaser.Math.Between(margin, this.gameWidth - margin);
+                let extraAttempts = 0;
+                while (Math.abs(extraXPos - xPos) < 50 && extraAttempts < 10) {
+                    extraXPos = Phaser.Math.Between(margin, this.gameWidth - margin);
+                    extraAttempts++;
+                }
+                let extraObj = this.stoneGroup.create(extraXPos, 0, 'stone');
+                extraObj.setScale(Phaser.Math.FloatBetween(3, 3.5));
+                extraObj.body.setSize(16, 16, true);
+                extraObj.body.setVelocityY(curSpeed + Phaser.Math.Between(0, 30));
+                extraObj.body.setVelocityX(Phaser.Math.Between(-20, 20));
+                extraObj.body.setOffset(extraObj.body.offset.x, extraObj.body.offset.y + 10);
             }
         }
         

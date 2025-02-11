@@ -119,6 +119,7 @@ class Gameplay extends Phaser.Scene {
   
         this.successSound = this.sound.add('sfx-success', { volume: 0.6 });
   
+        // 在 Gameplay 开始时重启 bgm：停止前一状态并重启循环播放，音量 0.65
         if (window.bgmSound && window.bgmSound.isPlaying) {
             window.bgmSound.stop();
         }

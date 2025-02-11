@@ -6,7 +6,6 @@ class Tutorial extends Phaser.Scene {
     create() {
         this.input.mouse.enabled = true;
         
-
         this.add.image(this.cameras.main.width / 2, this.cameras.main.height / 2, 'tutorial_bg')
             .setOrigin(0.5)
             .setDisplaySize(this.cameras.main.width, this.cameras.main.height);
@@ -15,7 +14,7 @@ class Tutorial extends Phaser.Scene {
             "Instructions:\n" +
             "1. Use the A and D keys to move your basket left and right on the platform.\n" +
             "2. Press the SPACE key to open or close the basket's lid. (Only an open basket can catch fruits.)\n" +
-            "3. Falling objects (fruits, bombs, stones, extra baskets, and coins) appear continuously; the coins see as magnet, their falling speed increases over time.\n" +
+            "3. Falling objects (fruits, bombs, stones, extra baskets, and coins) appear continuously; The coins see as magnet; their falling speed increases over time.\n" +
             "4. Bombs and stones will damage your basket if not avoided – each hit costs one basket.\n" +
             "5. Collect extra baskets to gain additional lives and coins to activate the magnet power-up.\n" +
             "6. Press the E key to turn on the magnet, which will attract falling fruits to your basket for 10 seconds. When the effect ends, it turns off.\n" +
@@ -47,14 +46,14 @@ class Tutorial extends Phaser.Scene {
             .setInteractive();
 
         startBtn.on('pointerover', () => {
-            this.sound.play('sfx-selection', { volume: 0.75 });
+            this.sound.play('sfx-selection', { volume: 0.6 });
             startBtn.setScale(1.05);
         });
         startBtn.on('pointerout', () => {
             startBtn.setScale(1);
         });
         startBtn.on('pointerdown', () => {
-            this.sound.play('sfx-confirm', { volume: 0.75 });
+            this.sound.play('sfx-confirm', { volume: 0.6 });
             this.scene.start("Gameplay");
         });
     }

@@ -51,14 +51,14 @@ class MainMenu extends Phaser.Scene {
             .setInteractive();
 
         playBtn.on('pointerover', () => {
-            this.sound.play('sfx-selection', { volume: 0.75 });
+            this.sound.play('sfx-selection', { volume: 0.6 });
             playBtn.setScale(1.05);
         });
         playBtn.on('pointerout', () => {
             playBtn.setScale(1);
         });
         playBtn.on('pointerdown', () => {
-            this.sound.play('sfx-confirm', { volume: 0.75 });
+            this.sound.play('sfx-confirm', { volume: 0.6 });
             this.scene.start("Tutorial");
         });
 

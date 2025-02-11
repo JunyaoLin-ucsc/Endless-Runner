@@ -20,7 +20,6 @@ class Preloader extends Phaser.Scene {
         this.load.image('extraBasket', 'assets/basket.png');
         this.load.image('coin', 'assets/coin.png');
         this.load.image('leaf', 'assets/leaf.png');
-
         this.load.audio('sfx-confirm', 'assets/sfx-confirm.wav');
         this.load.audio('sfx-escape', 'assets/sfx-escape.wav');
         this.load.audio('sfx-failure', 'assets/sfx-failure.wav');

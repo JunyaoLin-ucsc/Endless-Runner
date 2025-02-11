@@ -54,7 +54,7 @@ class Gameplay extends Phaser.Scene {
         this.basket.setFrame(0);
         this.isBasketClosed = false;
         this.basket.body.setSize(16, 16, true);
-        // Immediately reset basket position onto the platform:
+        // Immediately reset basket position onto the platform
         this.resetBasketY();
         this.basket.setCollideWorldBounds(true);
         this.basket.setBounce(0);
@@ -177,7 +177,7 @@ class Gameplay extends Phaser.Scene {
             this.toggleBasketLid();
         }
   
-        // Always reset the basket's Y position onto the platform when not in damage tween.
+        // Always reset the basket's Y position onto the platform when not damaged
         if (!this.isDamaged && (this.basket.body.blocked.down || this.basket.body.touching.down)) {
             this.resetBasketY();
             this.basket.setVelocityY(0);
@@ -428,6 +428,7 @@ class Gameplay extends Phaser.Scene {
             this.addExplosion(bomb.x, bomb.y);
             this.breakBasket();
         } else {
+            // When basket is closed, bounce the bomb and play hit sound.
             if (this.hitSound && this.hitSound.isPlaying) {
                 this.hitSound.stop();
             }
@@ -435,7 +436,7 @@ class Gameplay extends Phaser.Scene {
             this.hitSound.play();
             bomb.setVelocityY(-200);
             bomb.setVelocityX(Phaser.Math.Between(-200,200));
-            // For bomb collision when basket is closed, we simply reset the basket position without a heavy tween.
+            // Immediately reset basket position without a tween so that no flicker occurs.
             this.resetBasketY();
             this.ignoreGroundReset = true;
             this.time.addEvent({

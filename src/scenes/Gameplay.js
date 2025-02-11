@@ -442,13 +442,13 @@ class Gameplay extends Phaser.Scene {
     }
     
     handleStoneCollision(basket, stone) {
-        // Play explosion sound (volume 0.6)
+        // Play explosion sound at volume 0.6
         if (this.explosionSound && this.explosionSound.isPlaying) {
             this.explosionSound.stop();
         }
         this.explosionSound = this.sound.add('sfx-explosion', { volume: 0.6 });
         this.explosionSound.play();
-  
+    
         stone.destroy();
         this.isDamaged = true;
         this.basketCount--;
@@ -461,9 +461,11 @@ class Gameplay extends Phaser.Scene {
             repeat: 5,
             onComplete: () => {
                 this.basket.setAlpha(1);
+                // Calculate the correct Y position based on the platform
                 let basketH = this.basket.displayHeight;
                 let platformTop = this.platform.y - (this.platform.displayHeight / 2);
-                this.basket.y = platformTop - (basketH / 2);
+                // Reset the physics body (which updates both the sprite and its body)
+                this.basket.body.reset(this.basket.x, platformTop - (basketH / 2));
                 this.isDamaged = false;
                 if (this.basketCount <= 0) {
                     this.scene.start('Gameover', {
@@ -474,6 +476,7 @@ class Gameplay extends Phaser.Scene {
             }
         });
     }
+    
     
     handleExtraBasketCollision(basket, eb) {
         if (this.isBasketClosed) { return; }

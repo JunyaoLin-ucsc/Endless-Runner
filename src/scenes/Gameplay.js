@@ -7,6 +7,7 @@ class Gameplay extends Phaser.Scene {
         // Disable mouse input so that only keyboard controls are used
         this.input.mouse.enabled = false;
   
+        // Initialize core variables
         this.gameWidth  = this.cameras.main.width;
         this.gameHeight = this.cameras.main.height;
   
@@ -20,7 +21,7 @@ class Gameplay extends Phaser.Scene {
         this.ignoreGroundReset = false;
         this.isDamaged = false;
   
-        // --- Reset magnet state so that when restarting the scene, magnet is off ---
+        // *** Reset magnet state on scene start ***
         this.magnetActive = false;
         this.magnetEndTime = 0;
   
@@ -62,7 +63,7 @@ class Gameplay extends Phaser.Scene {
   
         // Use SPACE key to toggle the basket lid
         this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
-        // E key remains unchanged for magnet activation
+        // E key remains for magnet activation
         this.eKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E);
   
         // Initialize keyboard controls (A and D keys for basket movement)
@@ -129,7 +130,7 @@ class Gameplay extends Phaser.Scene {
   
         this.successSound = this.sound.add('sfx-success', { volume: 0.6 });
   
-        // Restart bgm in Gameplay with volume 0.4 (global bgm management)
+        // Restart bgm in Gameplay with volume 0.4
         if (window.bgmSound && window.bgmSound.isPlaying) {
             window.bgmSound.stop();
         }
@@ -146,7 +147,7 @@ class Gameplay extends Phaser.Scene {
     initKeyboardControls() {
         this.aKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
         this.dKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
-        // Initial basket movement speed: 1000 pixels/sec
+        // Set initial basket movement speed to 1000 pixels/sec
         this.basketSpeed = 1000;
         // First speed increase after 30 seconds
         this.nextSpeedIncreaseTime = 30;
@@ -428,7 +429,6 @@ class Gameplay extends Phaser.Scene {
             this.addExplosion(bomb.x, bomb.y);
             this.breakBasket();
         } else {
-            // Play hit sound (volume 0.6)
             if (this.hitSound && this.hitSound.isPlaying) {
                 this.hitSound.stop();
             }
@@ -456,7 +456,6 @@ class Gameplay extends Phaser.Scene {
     }
     
     handleStoneCollision(basket, stone) {
-        // Play explosion sound (volume 0.6)
         if (this.explosionSound && this.explosionSound.isPlaying) {
             this.explosionSound.stop();
         }

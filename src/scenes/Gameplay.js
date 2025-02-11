@@ -160,7 +160,7 @@ class Gameplay extends Phaser.Scene {
         this.timeText.setText(`Time: ${Math.floor(this.timeElapsed)}`);
   
         // 每 30 秒增加篮子移动速度，每次增加 90 像素/秒
-        if (this.timeElapsed >= this.nextSpeedIncreaseTime) {
+        if (this.timeElapsed < 240 && this.timeElapsed >= this.nextSpeedIncreaseTime) {
             this.basketSpeed += 90;
             this.nextSpeedIncreaseTime += 30;
         }
@@ -280,7 +280,7 @@ class Gameplay extends Phaser.Scene {
         
         // 修改：根据游戏经过的时间，每 30 秒增加一次掉落速度，
         // 增幅为 10 像素/秒，最多增加到 210 秒（step 最大为 7）
-        let step = Math.min(Math.floor(this.timeElapsed / 30), 7);
+        let step = Math.min(Math.floor(this.timeElapsed / 30), 10);
         let curSpeed = this.baseFallSpeed + (step * 10);
         
         let newObj;

@@ -448,6 +448,8 @@ class Gameplay extends Phaser.Scene {
             repeat: 5,
             onComplete: () => {
                 this.basket.setAlpha(1);
+                // 在篮子受损动画结束后恢复正常状态
+                this.isDamaged = false;
                 if (this.basketCount <= 0) {
                     this.scene.start('Gameover', {
                         score: this.score,
@@ -457,6 +459,7 @@ class Gameplay extends Phaser.Scene {
             }
         });
     }
+    
     
     handleExtraBasketCollision(basket, eb) {
         if (this.isBasketClosed) { return; }

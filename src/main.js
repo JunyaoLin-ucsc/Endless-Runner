@@ -33,7 +33,7 @@ let config = {
       }
   },
   sound: {
-    volume: 0.35  // Global default; individual scenes use their own volume settings as needed.
+    volume: 0.3  // Global default; individual scenes use their own volume settings as needed.
   }
 };
 

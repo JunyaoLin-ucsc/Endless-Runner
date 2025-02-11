@@ -3,10 +3,10 @@ class Gameplay extends Phaser.Scene {
         super("Gameplay");
     }
   
-    // preload() 由 Preloader 统一加载所有资源
+    // preload() 部分由 Preloader 加载所有资源
   
     create() {
-        // 禁用鼠标输入，确保游戏过程中不会使用鼠标来控制篮子
+        // 禁用鼠标输入，确保鼠标不会影响篮子控制
         this.input.mouse.enabled = false;
   
         this.gameWidth  = this.cameras.main.width;
@@ -64,7 +64,7 @@ class Gameplay extends Phaser.Scene {
         this.basket.setBounce(0);
         this.physics.add.collider(this.basket, this.platform);
   
-        // 移除鼠标控制（原有 pointermove 事件已注释）
+        // 移除鼠标控制（已注释掉）
         // this.input.on('pointermove', (pointer) => {
         //     this.basket.x = Phaser.Math.Clamp(pointer.x, 40, this.gameWidth - 40);
         // });
@@ -74,7 +74,7 @@ class Gameplay extends Phaser.Scene {
         // E 键功能保持不变
         this.eKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E);
   
-        // 初始化键盘控制（A 向左，D 向右）
+        // 初始化键盘控制：使用 A 和 D 键控制篮子左右移动
         this.initKeyboardControls();
   
         this.fruitGroup = this.physics.add.group();
@@ -145,12 +145,12 @@ class Gameplay extends Phaser.Scene {
         });
     }
   
-    // 定义键盘控制初始化方法，直接在 create() 中调用
+    // 在 create() 内直接定义 initKeyboardControls 方法
     initKeyboardControls() {
         this.aKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
         this.dKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
-        // 初始移动速度
-        this.basketSpeed = 300;
+        // 将初始移动速度提高到 500 像素/秒
+        this.basketSpeed = 500;
         // 第一次加速在 30 秒后
         this.nextSpeedIncreaseTime = 30;
     }
@@ -160,7 +160,7 @@ class Gameplay extends Phaser.Scene {
         this.timeElapsed += dt;
         this.timeText.setText(`Time: ${Math.floor(this.timeElapsed)}`);
   
-        // 每 30 秒增加篮子移动速度
+        // 每 30 秒增加篮子移动速度，每次增加 30 像素/秒
         if (this.timeElapsed >= this.nextSpeedIncreaseTime) {
             this.basketSpeed += 30;
             this.nextSpeedIncreaseTime += 30;

@@ -4,18 +4,19 @@ class Gameplay extends Phaser.Scene {
     }
   
     create() {
+        // 禁用鼠标输入，确保只使用键盘控制
         this.input.mouse.enabled = false;
   
         this.gameWidth  = this.cameras.main.width;
         this.gameHeight = this.cameras.main.height;
   
-        this.score        = 0;
+        this.score = 0;
         this.missedFruits = 0;
-        this.basketCount  = 3;
-        this.timeElapsed  = 0;
-        this.coinCount    = 0;
+        this.basketCount = 3;
+        this.timeElapsed = 0;
+        this.coinCount = 0;
   
-        this.baseFallSpeed = 100; 
+        this.baseFallSpeed = 100;
         this.ignoreGroundReset = false;
         this.isDamaged = false;
   
@@ -53,9 +54,14 @@ class Gameplay extends Phaser.Scene {
         this.basket.setBounce(0);
         this.physics.add.collider(this.basket, this.platform);
   
+        // 鼠标控制已移除
+  
+        // 使用空格键控制篮子盖子的开关
         this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+        // E 键功能保持不变
         this.eKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E);
   
+        // 初始化键盘控制（A 和 D 键控制篮子左右移动）
         this.initKeyboardControls();
   
         this.fruitGroup = this.physics.add.group();
@@ -119,11 +125,11 @@ class Gameplay extends Phaser.Scene {
   
         this.successSound = this.sound.add('sfx-success', { volume: 0.6 });
   
-        // 在 Gameplay 开始时重启 bgm：停止前一状态并重启循环播放，音量 0.65
+        // 在 Gameplay 开始时重启 bgm：停止前一状态并重启循环播放，音量 0.4
         if (window.bgmSound && window.bgmSound.isPlaying) {
             window.bgmSound.stop();
         }
-        window.bgmSound = this.sound.add('bgm', { loop: true, volume: 0.65 });
+        window.bgmSound = this.sound.add('bgm', { loop: true, volume: 0.4 });
         window.bgmSound.play();
   
         this.time.addEvent({
@@ -136,7 +142,9 @@ class Gameplay extends Phaser.Scene {
     initKeyboardControls() {
         this.aKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
         this.dKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
+        // 初始移动速度设置为 1000 像素/秒
         this.basketSpeed = 1000;
+        // 第一次加速在 30 秒后
         this.nextSpeedIncreaseTime = 30;
     }
   
@@ -145,6 +153,7 @@ class Gameplay extends Phaser.Scene {
         this.timeElapsed += dt;
         this.timeText.setText(`Time: ${Math.floor(this.timeElapsed)}`);
   
+        // 每 30 秒增加篮子移动速度，每次增加 90 像素/秒，但在 240 秒后不再增加
         if (this.timeElapsed < 240 && this.timeElapsed >= this.nextSpeedIncreaseTime) {
             this.basketSpeed += 90;
             this.nextSpeedIncreaseTime += 30;
@@ -162,7 +171,8 @@ class Gameplay extends Phaser.Scene {
             this.toggleBasketLid();
         }
   
-        if ((this.basket.body.blocked.down || this.basket.body.touching.down) && !this.ignoreGroundReset) {
+        // 始终重置篮子 Y 坐标到平台上
+        if (this.basket.body.blocked.down || this.basket.body.touching.down) {
             let basketH = this.basket.displayHeight;
             let platformTop = this.platform.y - (this.platform.displayHeight / 2);
             this.basket.y = platformTop - (basketH / 2);
@@ -271,6 +281,7 @@ class Gameplay extends Phaser.Scene {
             attempts++;
         } while (overlap && attempts < maxAttempts);
         
+        // 每 30 秒增加一次掉落速度，增幅为 10 像素/秒，最多增加到 300 秒（step 最大为 10）
         let step = Math.min(Math.floor(this.timeElapsed / 30), 10);
         let curSpeed = this.baseFallSpeed + (step * 10);
         
@@ -413,6 +424,7 @@ class Gameplay extends Phaser.Scene {
             this.addExplosion(bomb.x, bomb.y);
             this.breakBasket();
         } else {
+            // 播放 hit 音效，音量 0.6
             if (this.hitSound && this.hitSound.isPlaying) {
                 this.hitSound.stop();
             }
@@ -430,6 +442,7 @@ class Gameplay extends Phaser.Scene {
     }
     
     handleStoneCollision(basket, stone) {
+        // 播放 explosion 音效，音量 0.6
         if (this.explosionSound && this.explosionSound.isPlaying) {
             this.explosionSound.stop();
         }

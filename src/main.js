@@ -26,7 +26,10 @@ let config = {
           gravity: { y: 0 } 
       }
   },
-  
+  sound: {
+    volume: 0.50
+  },
+
 };
 
 let game = new Phaser.Game(config);

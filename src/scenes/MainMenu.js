@@ -7,11 +7,11 @@ class MainMenu extends Phaser.Scene {
         this.input.mouse.enabled = true;
 
         if (!window.bgmSound) {
-            window.bgmSound = this.sound.add('bgm', { loop: true, volume: 0.01 });
+            window.bgmSound = this.sound.add('bgm', { loop: true, volume: 0.001 });
             window.bgmSound.play();
         } else if (!window.bgmSound.isPlaying) {
             window.bgmSound.play();
-        }
+        }        
 
         this.add.image(this.cameras.main.width / 2, this.cameras.main.height / 2, 'menu_bg')
             .setOrigin(0.5)

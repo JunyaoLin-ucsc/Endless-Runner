@@ -7,7 +7,7 @@ class Gameplay extends Phaser.Scene {
   
     create() {
         // 禁用鼠标输入，确保鼠标不会影响篮子控制
-        this.input.mouse.enabled = false;
+        this.input.mouse.enabled = true;
   
         this.gameWidth  = this.cameras.main.width;
         this.gameHeight = this.cameras.main.height;

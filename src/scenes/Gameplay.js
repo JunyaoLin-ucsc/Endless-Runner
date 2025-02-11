@@ -3,9 +3,12 @@ class Gameplay extends Phaser.Scene {
         super("Gameplay");
     }
   
-    // preload() 部分由 Preloader 加载所有资源
+    // preload() 由 Preloader 统一加载所有资源
   
     create() {
+        // 禁用鼠标输入，确保游戏过程中不会使用鼠标来控制篮子
+        this.input.mouse.enabled = false;
+  
         this.gameWidth  = this.cameras.main.width;
         this.gameHeight = this.cameras.main.height;
   
@@ -61,7 +64,7 @@ class Gameplay extends Phaser.Scene {
         this.basket.setBounce(0);
         this.physics.add.collider(this.basket, this.platform);
   
-        // 【移除】不再使用鼠标控制篮子位置
+        // 移除鼠标控制（原有 pointermove 事件已注释）
         // this.input.on('pointermove', (pointer) => {
         //     this.basket.x = Phaser.Math.Clamp(pointer.x, 40, this.gameWidth - 40);
         // });
@@ -71,7 +74,7 @@ class Gameplay extends Phaser.Scene {
         // E 键功能保持不变
         this.eKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E);
   
-        // 初始化键盘控制：使用 A 和 D 键控制篮子左右移动
+        // 初始化键盘控制（A 向左，D 向右）
         this.initKeyboardControls();
   
         this.fruitGroup = this.physics.add.group();
@@ -142,7 +145,7 @@ class Gameplay extends Phaser.Scene {
         });
     }
   
-    // 在 create() 内直接定义 initKeyboardControls 方法
+    // 定义键盘控制初始化方法，直接在 create() 中调用
     initKeyboardControls() {
         this.aKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
         this.dKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
@@ -518,5 +521,3 @@ class Gameplay extends Phaser.Scene {
         this.time.delayedCall(600, () => { explosion.destroy(); });
     }
 }
-  
-// 调用 initKeyboardControls() 方法在 create() 内部已经完成，不要在外部再次调用

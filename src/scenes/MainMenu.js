@@ -6,12 +6,13 @@ class MainMenu extends Phaser.Scene {
     create() {
         this.input.mouse.enabled = true;
 
+        // Use a global variable to store bgm volume (set here to 0.4)
         if (!window.bgmSound) {
-            window.bgmSound = this.sound.add('bgm', { loop: true, volume: 500 });
+            window.bgmSound = this.sound.add('bgm', { loop: true, volume: 0.4 });
             window.bgmSound.play();
         } else if (!window.bgmSound.isPlaying) {
             window.bgmSound.play();
-        }        
+        }
 
         this.add.image(this.cameras.main.width / 2, this.cameras.main.height / 2, 'menu_bg')
             .setOrigin(0.5)

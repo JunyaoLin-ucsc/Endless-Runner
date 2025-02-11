@@ -4,7 +4,7 @@ class Gameplay extends Phaser.Scene {
     }
   
     create() {
-        // 禁用鼠标输入，确保只使用键盘控制
+        // Disable mouse input so that only keyboard controls are used
         this.input.mouse.enabled = false;
   
         this.gameWidth  = this.cameras.main.width;
@@ -54,14 +54,14 @@ class Gameplay extends Phaser.Scene {
         this.basket.setBounce(0);
         this.physics.add.collider(this.basket, this.platform);
   
-        // 鼠标控制已移除
+        // Mouse control removed
   
-        // 使用空格键控制篮子盖子的开关
+        // Use SPACE to toggle the basket lid
         this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
-        // E 键功能保持不变
+        // E key remains for magnet activation
         this.eKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E);
   
-        // 初始化键盘控制（A 和 D 键控制篮子左右移动）
+        // Initialize keyboard controls for basket movement (A and D keys)
         this.initKeyboardControls();
   
         this.fruitGroup = this.physics.add.group();
@@ -125,11 +125,11 @@ class Gameplay extends Phaser.Scene {
   
         this.successSound = this.sound.add('sfx-success', { volume: 0.6 });
   
-        // 在 Gameplay 开始时重启 bgm：停止前一状态并重启循环播放，音量 0.4
+        // Restart bgm in Gameplay with the same volume (0.4)
         if (window.bgmSound && window.bgmSound.isPlaying) {
             window.bgmSound.stop();
         }
-        window.bgmSound = this.sound.add('bgm', { loop: true, volume: 500 });
+        window.bgmSound = this.sound.add('bgm', { loop: true, volume: 0.4 });
         window.bgmSound.play();
   
         this.time.addEvent({
@@ -142,9 +142,9 @@ class Gameplay extends Phaser.Scene {
     initKeyboardControls() {
         this.aKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
         this.dKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
-        // 初始移动速度设置为 1000 像素/秒
+        // Set initial basket movement speed to 1000 pixels/sec
         this.basketSpeed = 1000;
-        // 第一次加速在 30 秒后
+        // First speed increase after 30 seconds
         this.nextSpeedIncreaseTime = 30;
     }
   
@@ -153,7 +153,7 @@ class Gameplay extends Phaser.Scene {
         this.timeElapsed += dt;
         this.timeText.setText(`Time: ${Math.floor(this.timeElapsed)}`);
   
-        // 每 30 秒增加篮子移动速度，每次增加 90 像素/秒，但在 240 秒后不再增加
+        // Increase basket movement speed every 30 seconds (by 90 pixels/sec) until 240 seconds
         if (this.timeElapsed < 240 && this.timeElapsed >= this.nextSpeedIncreaseTime) {
             this.basketSpeed += 90;
             this.nextSpeedIncreaseTime += 30;
@@ -171,7 +171,7 @@ class Gameplay extends Phaser.Scene {
             this.toggleBasketLid();
         }
   
-        // 始终重置篮子 Y 坐标到平台上
+        // Always reset the basket's Y position to the platform
         if (this.basket.body.blocked.down || this.basket.body.touching.down) {
             let basketH = this.basket.displayHeight;
             let platformTop = this.platform.y - (this.platform.displayHeight / 2);
@@ -281,7 +281,7 @@ class Gameplay extends Phaser.Scene {
             attempts++;
         } while (overlap && attempts < maxAttempts);
         
-        // 每 30 秒增加一次掉落速度，增幅为 10 像素/秒，最多增加到 300 秒（step 最大为 10）
+        // Increase falling speed every 30 seconds by 10 pixels/sec, up to 300 sec (max step = 10)
         let step = Math.min(Math.floor(this.timeElapsed / 30), 10);
         let curSpeed = this.baseFallSpeed + (step * 10);
         
@@ -424,7 +424,7 @@ class Gameplay extends Phaser.Scene {
             this.addExplosion(bomb.x, bomb.y);
             this.breakBasket();
         } else {
-            // 播放 hit 音效，音量 0.6
+            // Play hit sound (volume 0.6)
             if (this.hitSound && this.hitSound.isPlaying) {
                 this.hitSound.stop();
             }
@@ -442,7 +442,7 @@ class Gameplay extends Phaser.Scene {
     }
     
     handleStoneCollision(basket, stone) {
-        // 播放 explosion 音效，音量 0.6
+        // Play explosion sound (volume 0.6)
         if (this.explosionSound && this.explosionSound.isPlaying) {
             this.explosionSound.stop();
         }

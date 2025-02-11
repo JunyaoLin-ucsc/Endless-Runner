@@ -162,8 +162,8 @@ class Gameplay extends Phaser.Scene {
   
         // 每 30 秒增加篮子移动速度，每次增加 30 像素/秒
         if (this.timeElapsed >= this.nextSpeedIncreaseTime) {
-            this.basketSpeed += 300;
-            this.nextSpeedIncreaseTime += 300;
+            this.basketSpeed += 150;
+            this.nextSpeedIncreaseTime += 30;
         }
   
         // 使用 A 键向左，D 键向右控制篮子移动

@@ -343,43 +343,46 @@ class Gameplay extends Phaser.Scene {
             newObj.body.setVelocityY(curSpeed + Phaser.Math.Between(0, 50));
         });
         
-        if (this.timeElapsed >= 60 && type === 'fruit') {
-            let extraFruitCount = Math.min(Math.floor(this.timeElapsed / 60), 5);
+        if (this.timeElapsed >= 100 && type === 'fruit') {
+            // 每隔 100 秒增加 1 组，最多增加 2 组
+            let extraFruitCount = Math.min(Math.floor(this.timeElapsed / 100), 2);
             for (let i = 0; i < extraFruitCount; i++) {
-                let extraXPos = Phaser.Math.Between(margin, this.gameWidth - margin);
-                let extraAttempts = 0;
-                while (Math.abs(extraXPos - xPos) < 50 && extraAttempts < 10) {
-                    extraXPos = Phaser.Math.Between(margin, this.gameWidth - margin);
-                    extraAttempts++;
-                }
-                let extraFruitKey = Phaser.Utils.Array.GetRandom(['apple', 'banana', 'orange', 'watermelon', 'strawberry']);
-                let extraObj = this.fruitGroup.create(extraXPos, 0, extraFruitKey);
-                let extraScale = Phaser.Math.FloatBetween(3, 3.5);
-                if (extraFruitKey === 'apple' || extraFruitKey === 'banana' || extraFruitKey === 'orange' || extraFruitKey === 'watermelon') {
-                    extraScale *= 0.75;
-                }
-                extraObj.setScale(extraScale);
-                extraObj.body.setSize(16, 16, true);
-                extraObj.body.setVelocityY(curSpeed + Phaser.Math.Between(0, 50));
-                extraObj.body.setVelocityX(Phaser.Math.Between(-20, 20));
+                 let extraXPos = Phaser.Math.Between(margin, this.gameWidth - margin);
+                 let extraAttempts = 0;
+                 while (Math.abs(extraXPos - xPos) < 50 && extraAttempts < 10) {
+                     extraXPos = Phaser.Math.Between(margin, this.gameWidth - margin);
+                     extraAttempts++;
+                 }
+                 let extraFruitKey = Phaser.Utils.Array.GetRandom(['apple', 'banana', 'orange', 'watermelon', 'strawberry']);
+                 let extraObj = this.fruitGroup.create(extraXPos, 0, extraFruitKey);
+                 let extraScale = Phaser.Math.FloatBetween(3, 3.5);
+                 if (extraFruitKey === 'apple' || extraFruitKey === 'banana' || extraFruitKey === 'orange' || extraFruitKey === 'watermelon') {
+                     extraScale *= 0.75;
+                 }
+                 extraObj.setScale(extraScale);
+                 extraObj.body.setSize(16, 16, true);
+                 extraObj.body.setVelocityY(curSpeed + Phaser.Math.Between(0, 50));
+                 extraObj.body.setVelocityX(Phaser.Math.Between(-20, 20));
             }
         }
         
-        if (this.timeElapsed >= 60 && type === 'stone') {
-            let extraStoneCount = Math.min(Math.floor(this.timeElapsed / 60), 5);
+        // 针对陨石掉落密度的增加（仅修改这一部分）
+        if (this.timeElapsed >= 100 && type === 'stone') {
+            // 每隔 100 秒增加 1 组，最多增加 2 组
+            let extraStoneCount = Math.min(Math.floor(this.timeElapsed / 100), 2);
             for (let i = 0; i < extraStoneCount; i++) {
-                let extraXPos = Phaser.Math.Between(margin, this.gameWidth - margin);
-                let extraAttempts = 0;
-                while (Math.abs(extraXPos - xPos) < 50 && extraAttempts < 10) {
-                    extraXPos = Phaser.Math.Between(margin, this.gameWidth - margin);
-                    extraAttempts++;
-                }
-                let extraObj = this.stoneGroup.create(extraXPos, 0, 'stone');
-                extraObj.setScale(Phaser.Math.FloatBetween(3, 3.5));
-                extraObj.body.setSize(16, 16, true);
-                extraObj.body.setVelocityY(curSpeed + Phaser.Math.Between(0, 50));
-                extraObj.body.setVelocityX(Phaser.Math.Between(-20, 20));
-                extraObj.body.setOffset(extraObj.body.offset.x, extraObj.body.offset.y + 10);
+                 let extraXPos = Phaser.Math.Between(margin, this.gameWidth - margin);
+                 let extraAttempts = 0;
+                 while (Math.abs(extraXPos - xPos) < 50 && extraAttempts < 10) {
+                     extraXPos = Phaser.Math.Between(margin, this.gameWidth - margin);
+                     extraAttempts++;
+                 }
+                 let extraObj = this.stoneGroup.create(extraXPos, 0, 'stone');
+                 extraObj.setScale(Phaser.Math.FloatBetween(3, 3.5));
+                 extraObj.body.setSize(16, 16, true);
+                 extraObj.body.setVelocityY(curSpeed + Phaser.Math.Between(0, 50));
+                 extraObj.body.setVelocityX(Phaser.Math.Between(-20, 20));
+                 extraObj.body.setOffset(extraObj.body.offset.x, extraObj.body.offset.y + 10);
             }
         }
         

@@ -21,7 +21,7 @@ class Gameplay extends Phaser.Scene {
         this.ignoreGroundReset = false;
         this.isDamaged = false;
   
-        // *** Reset magnet state on scene start ***
+        // Reset magnet state on scene start
         this.magnetActive = false;
         this.magnetEndTime = 0;
   
@@ -54,7 +54,8 @@ class Gameplay extends Phaser.Scene {
         this.basket.setFrame(0);
         this.isBasketClosed = false;
         this.basket.body.setSize(16, 16, true);
-        this.basket.y = this.platform.y - 40;
+        // Immediately reset basket position onto the platform:
+        this.resetBasketY();
         this.basket.setCollideWorldBounds(true);
         this.basket.setBounce(0);
         this.physics.add.collider(this.basket, this.platform);
@@ -176,11 +177,9 @@ class Gameplay extends Phaser.Scene {
             this.toggleBasketLid();
         }
   
-        // Always reset basket's Y position to the platform
-        if (this.basket.body.blocked.down || this.basket.body.touching.down) {
-            let basketH = this.basket.displayHeight;
-            let platformTop = this.platform.y - (this.platform.displayHeight / 2);
-            this.basket.y = platformTop - (basketH / 2);
+        // Always reset the basket's Y position onto the platform when not in damage tween.
+        if (!this.isDamaged && (this.basket.body.blocked.down || this.basket.body.touching.down)) {
+            this.resetBasketY();
             this.basket.setVelocityY(0);
         }
   
@@ -436,16 +435,8 @@ class Gameplay extends Phaser.Scene {
             this.hitSound.play();
             bomb.setVelocityY(-200);
             bomb.setVelocityX(Phaser.Math.Between(-200,200));
-            this.tweens.add({
-                targets: this.basket,
-                alpha: 0.2,
-                duration: 100,
-                yoyo: true,
-                repeat: 1,
-                onComplete: () => {
-                    this.resetBasketY();
-                }
-            });
+            // For bomb collision when basket is closed, we simply reset the basket position without a heavy tween.
+            this.resetBasketY();
             this.ignoreGroundReset = true;
             this.time.addEvent({
                 delay: 500,

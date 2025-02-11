@@ -27,7 +27,7 @@ let config = {
       }
   },
   sound: {
-    volume: 0.50
+    volume: 0.35
   },
 
 };

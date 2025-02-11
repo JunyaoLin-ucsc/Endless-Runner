@@ -9,7 +9,9 @@ class Gameover extends Phaser.Scene {
     }
   
     create() {
+        // Re-enable mouse input so buttons can be clicked
         this.input.mouse.enabled = true;
+        // Stop bgm
         if (window.bgmSound && window.bgmSound.isPlaying) {
             window.bgmSound.stop();
         }

@@ -20,6 +20,10 @@ class Gameplay extends Phaser.Scene {
         this.ignoreGroundReset = false;
         this.isDamaged = false;
   
+        // --- Reset magnet state so that when restarting the scene, magnet is off ---
+        this.magnetActive = false;
+        this.magnetEndTime = 0;
+  
         this.bg = this.add.image(this.gameWidth / 2, this.gameHeight / 2, 'game_bg')
             .setOrigin(0.5)
             .setDisplaySize(this.gameWidth, this.gameHeight);
@@ -56,12 +60,12 @@ class Gameplay extends Phaser.Scene {
   
         // Mouse control removed
   
-        // Use SPACE to toggle the basket lid
+        // Use SPACE key to toggle the basket lid
         this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
-        // E key remains for magnet activation
+        // E key remains unchanged for magnet activation
         this.eKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E);
   
-        // Initialize keyboard controls for basket movement (A and D keys)
+        // Initialize keyboard controls (A and D keys for basket movement)
         this.initKeyboardControls();
   
         this.fruitGroup = this.physics.add.group();
@@ -125,11 +129,11 @@ class Gameplay extends Phaser.Scene {
   
         this.successSound = this.sound.add('sfx-success', { volume: 0.6 });
   
-        // Restart bgm in Gameplay with the same volume (0.4)
+        // Restart bgm in Gameplay with volume 0.4 (global bgm management)
         if (window.bgmSound && window.bgmSound.isPlaying) {
             window.bgmSound.stop();
         }
-        window.bgmSound = this.sound.add('bgm', { loop: true, volume: 0.3 });
+        window.bgmSound = this.sound.add('bgm', { loop: true, volume: 0.4 });
         window.bgmSound.play();
   
         this.time.addEvent({
@@ -142,7 +146,7 @@ class Gameplay extends Phaser.Scene {
     initKeyboardControls() {
         this.aKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
         this.dKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
-        // Set initial basket movement speed to 1000 pixels/sec
+        // Initial basket movement speed: 1000 pixels/sec
         this.basketSpeed = 1000;
         // First speed increase after 30 seconds
         this.nextSpeedIncreaseTime = 30;
@@ -153,7 +157,7 @@ class Gameplay extends Phaser.Scene {
         this.timeElapsed += dt;
         this.timeText.setText(`Time: ${Math.floor(this.timeElapsed)}`);
   
-        // Increase basket movement speed every 30 seconds (by 90 pixels/sec) until 240 seconds
+        // Increase basket movement speed every 30 sec (by 90 pixels/sec) until 240 sec
         if (this.timeElapsed < 240 && this.timeElapsed >= this.nextSpeedIncreaseTime) {
             this.basketSpeed += 90;
             this.nextSpeedIncreaseTime += 30;
@@ -171,7 +175,7 @@ class Gameplay extends Phaser.Scene {
             this.toggleBasketLid();
         }
   
-        // Always reset the basket's Y position to the platform
+        // Always reset basket's Y position to the platform
         if (this.basket.body.blocked.down || this.basket.body.touching.down) {
             let basketH = this.basket.displayHeight;
             let platformTop = this.platform.y - (this.platform.displayHeight / 2);
@@ -281,7 +285,7 @@ class Gameplay extends Phaser.Scene {
             attempts++;
         } while (overlap && attempts < maxAttempts);
         
-        // Increase falling speed every 30 seconds by 10 pixels/sec, up to 300 sec (max step = 10)
+        // Increase falling speed every 30 sec by 10 pixels/sec, up to 300 sec (max step = 10)
         let step = Math.min(Math.floor(this.timeElapsed / 30), 10);
         let curSpeed = this.baseFallSpeed + (step * 10);
         
@@ -417,21 +421,14 @@ class Gameplay extends Phaser.Scene {
         this.playSuccessSound();
         fruit.destroy();
     }
-    resetBasketY() {
-        let basketH = this.basket.displayHeight;
-        let platformTop = this.platform.y - (this.platform.displayHeight / 2);
-        this.basket.body.reset(this.basket.x, platformTop - (basketH / 2));
-    }
     
     handleBombCollision(basket, bomb) {
         if (!this.isBasketClosed) {
-            // If basket is open, bomb causes damage
             bomb.destroy();
             this.addExplosion(bomb.x, bomb.y);
             this.breakBasket();
         } else {
-            // When the basket is closed, the bomb is bounced away.
-            // Play hit sound (volume 0.6) and apply a brief hit tween.
+            // Play hit sound (volume 0.6)
             if (this.hitSound && this.hitSound.isPlaying) {
                 this.hitSound.stop();
             }
@@ -439,7 +436,6 @@ class Gameplay extends Phaser.Scene {
             this.hitSound.play();
             bomb.setVelocityY(-200);
             bomb.setVelocityX(Phaser.Math.Between(-200,200));
-            // Use a tween to briefly flash the basket and then reset its Y position.
             this.tweens.add({
                 targets: this.basket,
                 alpha: 0.2,
@@ -459,7 +455,6 @@ class Gameplay extends Phaser.Scene {
         }
     }
     
-    
     handleStoneCollision(basket, stone) {
         // Play explosion sound (volume 0.6)
         if (this.explosionSound && this.explosionSound.isPlaying) {
@@ -467,7 +462,7 @@ class Gameplay extends Phaser.Scene {
         }
         this.explosionSound = this.sound.add('sfx-explosion', { volume: 0.6 });
         this.explosionSound.play();
-    
+  
         stone.destroy();
         this.isDamaged = true;
         this.basketCount--;
@@ -480,8 +475,9 @@ class Gameplay extends Phaser.Scene {
             repeat: 5,
             onComplete: () => {
                 this.basket.setAlpha(1);
-                // Reset basket position using the helper function
-                this.resetBasketY();
+                let basketH = this.basket.displayHeight;
+                let platformTop = this.platform.y - (this.platform.displayHeight / 2);
+                this.basket.body.reset(this.basket.x, platformTop - (basketH / 2));
                 this.isDamaged = false;
                 if (this.basketCount <= 0) {
                     this.scene.start('Gameover', {
@@ -492,7 +488,6 @@ class Gameplay extends Phaser.Scene {
             }
         });
     }
-    
     
     handleExtraBasketCollision(basket, eb) {
         if (this.isBasketClosed) { return; }
@@ -547,7 +542,12 @@ class Gameplay extends Phaser.Scene {
         }
     }
     
-    
+    // Helper function to reset the basket's position (sprite and physics body)
+    resetBasketY() {
+        let basketH = this.basket.displayHeight;
+        let platformTop = this.platform.y - (this.platform.displayHeight / 2);
+        this.basket.body.reset(this.basket.x, platformTop - (basketH / 2));
+    }
     
     addExplosion(x, y) {
         let explosion = this.add.particles('coin');

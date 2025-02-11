@@ -417,14 +417,21 @@ class Gameplay extends Phaser.Scene {
         this.playSuccessSound();
         fruit.destroy();
     }
+    resetBasketY() {
+        let basketH = this.basket.displayHeight;
+        let platformTop = this.platform.y - (this.platform.displayHeight / 2);
+        this.basket.body.reset(this.basket.x, platformTop - (basketH / 2));
+    }
     
     handleBombCollision(basket, bomb) {
         if (!this.isBasketClosed) {
+            // If basket is open, bomb causes damage
             bomb.destroy();
             this.addExplosion(bomb.x, bomb.y);
             this.breakBasket();
         } else {
-            // Play hit sound (volume 0.6)
+            // When the basket is closed, the bomb is bounced away.
+            // Play hit sound (volume 0.6) and apply a brief hit tween.
             if (this.hitSound && this.hitSound.isPlaying) {
                 this.hitSound.stop();
             }
@@ -432,6 +439,17 @@ class Gameplay extends Phaser.Scene {
             this.hitSound.play();
             bomb.setVelocityY(-200);
             bomb.setVelocityX(Phaser.Math.Between(-200,200));
+            // Use a tween to briefly flash the basket and then reset its Y position.
+            this.tweens.add({
+                targets: this.basket,
+                alpha: 0.2,
+                duration: 100,
+                yoyo: true,
+                repeat: 1,
+                onComplete: () => {
+                    this.resetBasketY();
+                }
+            });
             this.ignoreGroundReset = true;
             this.time.addEvent({
                 delay: 500,
@@ -440,6 +458,7 @@ class Gameplay extends Phaser.Scene {
             });
         }
     }
+    
     
     handleStoneCollision(basket, stone) {
         // Play explosion sound (volume 0.6)
@@ -461,11 +480,8 @@ class Gameplay extends Phaser.Scene {
             repeat: 5,
             onComplete: () => {
                 this.basket.setAlpha(1);
-                // Recalculate the correct Y based on the platform
-                let basketH = this.basket.displayHeight;
-                let platformTop = this.platform.y - (this.platform.displayHeight / 2);
-                // Reset the physics body so that both the sprite and its body are in sync.
-                this.basket.body.reset(this.basket.x, platformTop - (basketH / 2));
+                // Reset basket position using the helper function
+                this.resetBasketY();
                 this.isDamaged = false;
                 if (this.basketCount <= 0) {
                     this.scene.start('Gameover', {
@@ -476,6 +492,7 @@ class Gameplay extends Phaser.Scene {
             }
         });
     }
+    
     
     handleExtraBasketCollision(basket, eb) {
         if (this.isBasketClosed) { return; }
@@ -518,10 +535,7 @@ class Gameplay extends Phaser.Scene {
                 repeat: 5,
                 onComplete: () => {
                     this.basket.setAlpha(1);
-                    let basketH = this.basket.displayHeight;
-                    let platformTop = this.platform.y - (this.platform.displayHeight / 2);
-                    // Reset the basket's physics body to re-sync the sprite position.
-                    this.basket.body.reset(this.basket.x, platformTop - (basketH / 2));
+                    this.resetBasketY();
                     this.isDamaged = false;
                 }
             });
@@ -532,6 +546,7 @@ class Gameplay extends Phaser.Scene {
             });
         }
     }
+    
     
     
     addExplosion(x, y) {

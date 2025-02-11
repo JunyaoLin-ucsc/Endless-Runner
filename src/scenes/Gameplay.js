@@ -129,7 +129,7 @@ class Gameplay extends Phaser.Scene {
         if (window.bgmSound && window.bgmSound.isPlaying) {
             window.bgmSound.stop();
         }
-        window.bgmSound = this.sound.add('bgm', { loop: true, volume: 10 });
+        window.bgmSound = this.sound.add('bgm', { loop: true, volume: 500 });
         window.bgmSound.play();
   
         this.time.addEvent({

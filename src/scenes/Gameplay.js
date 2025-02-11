@@ -3,11 +3,8 @@ class Gameplay extends Phaser.Scene {
         super("Gameplay");
     }
   
-    // preload() 部分由 Preloader 加载所有资源
-  
     create() {
-        // 禁用鼠标输入，确保只使用键盘控制
-        this.input.mouse.enabled = false;
+        this.input.mouse.enabled = true;
   
         this.gameWidth  = this.cameras.main.width;
         this.gameHeight = this.cameras.main.height;

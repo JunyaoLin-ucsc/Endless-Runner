@@ -2,35 +2,7 @@ class Gameplay extends Phaser.Scene {
     constructor() {
         super("Gameplay");
     }
-  
-    // preload() {
-    //     this.load.image('game_bg', 'assets/background1.png');
-    //     this.load.image('platform', 'assets/platform.png');
-    //     this.load.spritesheet('basketSheet', 'assets/basket-Sheet.png', {
-    //         frameWidth: 32,
-    //         frameHeight: 32
-    //     });
-  
-    //     this.load.image('apple', 'assets/apple.png');
-    //     this.load.image('banana', 'assets/banana.png');
-    //     this.load.image('orange', 'assets/orange.png');
-    //     this.load.image('watermelon', 'assets/watermelon.png');
-    //     this.load.image('strawberry', 'assets/strawberry.png');
-    //     this.load.image('bomb', 'assets/bomb.png');
-    //     this.load.image('stone', 'assets/falling stone.png');
-    //     this.load.image('extraBasket', 'assets/basket.png');
-    //     this.load.image('coin', 'assets/coin.png');
-  
-    //     this.load.image('leaf', 'assets/leaf.png');
-
-    //     // 加载音效资源
-    //     this.load.audio('sfx-confirm', 'assets/sfx-confirm.wav');
-    //     this.load.audio('sfx-escape', 'assets/sfx-escape.wav');
-    //     this.load.audio('sfx-failure', 'assets/sfx-failure.wav');
-    //     this.load.audio('sfx-selection', 'assets/sfx-selection.wav');
-    //     this.load.audio('sfx-success', 'assets/sfx-success.wav');
-    // }
-  
+   
     create() {
         this.gameWidth  = this.cameras.main.width;
         this.gameHeight = this.cameras.main.height;
@@ -39,11 +11,8 @@ class Gameplay extends Phaser.Scene {
         this.missedFruits = 0;
         this.basketCount  = 3;
         this.timeElapsed  = 0;
-  
-        this.coinCount = 0;
-  
+        this.coinCount    = 0;
         this.baseFallSpeed = 100; 
-  
         this.ignoreGroundReset = false;
         this.isDamaged = false;
   
@@ -84,20 +53,22 @@ class Gameplay extends Phaser.Scene {
         this.basket.setFrame(0);
         this.isBasketClosed = false;
         this.basket.body.setSize(16, 16, true);
-        // 将篮子固定在平台上方
         this.basket.y = this.platform.y - 40;
         this.basket.setCollideWorldBounds(true);
         this.basket.setBounce(0);
         this.physics.add.collider(this.basket, this.platform);
   
+        // 修改部分：不直接将篮子位置赋值，而是通过 targetX 追踪鼠标
+        this.basketSpeedFactor = 1;          // 初始速度因子
+        this.nextSpeedIncreaseTime = 60;     // 第一次加速在 60 秒后
+        this.targetX = this.basket.x;        // 初始目标位置
         this.input.on('pointermove', (pointer) => {
-            this.basket.x = Phaser.Math.Clamp(pointer.x, 40, this.gameWidth - 40);
+            this.targetX = Phaser.Math.Clamp(pointer.x, 40, this.gameWidth - 40);
         });
+        // 保留原来的 pointerdown 事件用于切换篮子盖动画
         this.input.on('pointerdown', () => {
             this.toggleBasketLid();
         });
-  
-        // 已移除与篮子跳跃相关代码
   
         this.fruitGroup = this.physics.add.group();
         this.bombGroup = this.physics.add.group();
@@ -119,7 +90,6 @@ class Gameplay extends Phaser.Scene {
         this.bottomLine.setImmovable(true);
         this.bottomLine.body.allowGravity = false;
   
-        // 当水果接触到底部时，触发漏接（failure）效果
         this.physics.add.collider(this.fruitGroup, this.bottomLine, (fruit) => {
             this.handleMissedFruit();
             this.sound.play('sfx-failure');
@@ -159,8 +129,6 @@ class Gameplay extends Phaser.Scene {
         this.coinText = this.add.text(20, this.gameHeight - 80, `Coin: ${this.coinCount}`, { fontSize: '32px', fill: '#fff' });
         this.magnetText = this.add.text(this.gameWidth - 220, 20, '', { fontSize: '32px', fill: '#fff' });
   
-        // 创建 success 音效实例，用于在成功接到水果、金币和篮子时播放，
-        // 播放前会先停止上一次的播放以避免音量叠加
         this.successSound = this.sound.add('sfx-success', { volume: 1 });
   
         this.time.addEvent({
@@ -174,8 +142,23 @@ class Gameplay extends Phaser.Scene {
     }
   
     update(time, delta) {
-        this.timeElapsed += (delta / 1000);
+        let dt = delta / 1000;
+        this.timeElapsed += dt;
         this.timeText.setText(`Time: ${Math.floor(this.timeElapsed)}`);
+  
+        // 每60秒增加一次篮子追踪速度（增加0.05）
+        if (this.timeElapsed >= this.nextSpeedIncreaseTime) {
+            this.basketSpeedFactor += 0.05;
+            this.nextSpeedIncreaseTime += 60;
+        }
+  
+        // 用 basketSpeedFactor 让篮子逐渐追踪目标 x 坐标
+        let diff = this.targetX - this.basket.x;
+        let moveSpeed = 300 * this.basketSpeedFactor;
+        if (Math.abs(diff) > 1) {
+            let change = Phaser.Math.Clamp(diff, -moveSpeed * dt, moveSpeed * dt);
+            this.basket.x += change;
+        }
         this.basket.x = Phaser.Math.Clamp(this.basket.x, 40, this.gameWidth - 40);
         
         if ((this.basket.body.blocked.down || this.basket.body.touching.down) && !this.ignoreGroundReset && !this.isDamaged) {
@@ -184,6 +167,7 @@ class Gameplay extends Phaser.Scene {
             this.basket.y = platformTop - (basketH / 2);
             this.basket.setVelocityY(0);
         }
+  
         this.fruitGroup.getChildren().forEach((fruit) => {
             if (fruit.y > this.gameHeight) {
                 this.handleMissedFruit();
@@ -397,7 +381,6 @@ class Gameplay extends Phaser.Scene {
         }
     }
     
-    // 辅助函数：播放 success 音效（先停止正在播放的效果）
     playSuccessSound() {
         if (this.successSound.isPlaying) {
             this.successSound.stop();
@@ -405,7 +388,6 @@ class Gameplay extends Phaser.Scene {
         this.successSound.play();
     }
     
-    // 成功接到水果时播放 success 音效并加分
     handleCatchFruit(basket, fruit) {
         if (!this.magnetActive && this.isBasketClosed) { return; }
         this.score++;
@@ -455,7 +437,6 @@ class Gameplay extends Phaser.Scene {
         });
     }
     
-    // 成功接到篮子时也播放 success 音效
     handleExtraBasketCollision(basket, eb) {
         if (this.isBasketClosed) { return; }
         eb.destroy();
@@ -464,7 +445,6 @@ class Gameplay extends Phaser.Scene {
         this.playSuccessSound();
     }
     
-    // 成功接到金币（磁铁）时播放 success 音效
     handleCoinCollision(basket, coin) {
         coin.destroy();
         if (this.coinCount < 5) {

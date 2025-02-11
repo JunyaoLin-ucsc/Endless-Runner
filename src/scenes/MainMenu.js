@@ -3,10 +3,7 @@ class MainMenu extends Phaser.Scene {
         super("MainMenu");
     }
   
-    // preload() 部分由 Preloader 统一加载所有资源
-  
     create() {
-        // 添加背景图像，充满屏幕
         this.add.image(
             this.cameras.main.width / 2,
             this.cameras.main.height / 2,
@@ -15,7 +12,6 @@ class MainMenu extends Phaser.Scene {
         .setOrigin(0.5)
         .setDisplaySize(this.cameras.main.width, this.cameras.main.height);
   
-        // 添加标题文本
         let titleStyle = {
             fontFamily: 'Georgia, serif',
             fontSize: '80px',
@@ -40,7 +36,6 @@ class MainMenu extends Phaser.Scene {
             ease: 'Sine.easeInOut'
         });
   
-        // 按钮配置（与 Tutorial.js 相同）
         let btnConfig = {
             fontFamily: 'Arial',
             fontSize: '40px',
@@ -50,18 +45,15 @@ class MainMenu extends Phaser.Scene {
             align: 'center'
         };
   
-        // 创建按钮文本对象
-        // 将文本从 "GAME START" 改为 "PLAY"，并将按钮放置于屏幕正中稍上方
         let playBtn = this.add.text(
             this.cameras.main.width / 2,
-            this.cameras.main.height / 2 - 50,  // 向上移50像素
+            this.cameras.main.height / 2 - 50,  
             'PLAY',
             btnConfig
         )
         .setOrigin(0.5)
-        .setInteractive();  // 文本对象自动以自身边界作为交互区域
+        .setInteractive();  
   
-        // 为按钮添加鼠标事件（与 Tutorial.js 一致）
         playBtn.on('pointerover', () => {
             this.sound.play('sfx-selection', { volume: 0.75 });
             playBtn.setScale(1.05);
@@ -74,7 +66,6 @@ class MainMenu extends Phaser.Scene {
             this.scene.start('Tutorial');
         });
   
-        // 添加底部版权信息
         this.add.text(
             this.cameras.main.width / 2,
             this.cameras.main.height - 40,

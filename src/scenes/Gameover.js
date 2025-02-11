@@ -10,7 +10,6 @@ class Gameover extends Phaser.Scene {
   
     // preload() {
     //     this.load.image('gameover_bg', 'assets/background1.png');
-    //     // 加载音效资源
     //     this.load.audio('sfx-confirm', 'assets/sfx-confirm.wav');
     //     this.load.audio('sfx-escape', 'assets/sfx-escape.wav');
     //     this.load.audio('sfx-failure', 'assets/sfx-failure.wav');

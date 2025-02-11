@@ -19,21 +19,13 @@ class Gameplay extends Phaser.Scene {
         this.ignoreGroundReset = false;
         this.isDamaged = false;
   
-        this.bg = this.add.image(
-            this.gameWidth / 2,
-            this.gameHeight / 2,
-            'game_bg'
-        )
-        .setOrigin(0.5)
-        .setDisplaySize(this.gameWidth, this.gameHeight);
+        this.bg = this.add.image(this.gameWidth / 2, this.gameHeight / 2, 'game_bg')
+            .setOrigin(0.5)
+            .setDisplaySize(this.gameWidth, this.gameHeight);
   
         this.physics.world.setBounds(0, 0, this.gameWidth, this.gameHeight);
   
-        this.platform = this.physics.add.staticSprite(
-            this.gameWidth / 2,
-            this.gameHeight - 80,
-            'platform'
-        );
+        this.platform = this.physics.add.staticSprite(this.gameWidth / 2, this.gameHeight - 80, 'platform');
         this.platform.setDisplaySize(this.gameWidth, 40);
         this.platform.refreshBody();
         this.platform.body.setSize(768, 1, true);
@@ -61,17 +53,9 @@ class Gameplay extends Phaser.Scene {
         this.basket.setBounce(0);
         this.physics.add.collider(this.basket, this.platform);
   
-        // 原来的鼠标控制已移除
-        // this.input.on('pointermove', (pointer) => {
-        //     this.basket.x = Phaser.Math.Clamp(pointer.x, 40, this.gameWidth - 40);
-        // });
-  
-        // 使用空格键控制篮子盖子的开关
         this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
-        // E 键功能保持不变
         this.eKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E);
   
-        // 初始化键盘控制（A 和 D 键控制篮子左右移动）
         this.initKeyboardControls();
   
         this.fruitGroup = this.physics.add.group();
@@ -96,7 +80,7 @@ class Gameplay extends Phaser.Scene {
   
         this.physics.add.collider(this.fruitGroup, this.bottomLine, (fruit) => {
             this.handleMissedFruit();
-            this.sound.play('sfx-failure');
+            this.sound.play('sfx-failure', { volume: 0.6 });
             fruit.setVelocityY(0);
             fruit.body.setAllowGravity(false);
             this.time.addEvent({
@@ -133,7 +117,13 @@ class Gameplay extends Phaser.Scene {
         this.coinText = this.add.text(20, this.gameHeight - 80, `Coin: ${this.coinCount}`, { fontSize: '32px', fill: '#fff' });
         this.magnetText = this.add.text(this.gameWidth - 220, 20, '', { fontSize: '32px', fill: '#fff' });
   
-        this.successSound = this.sound.add('sfx-success', { volume: 1 });
+        this.successSound = this.sound.add('sfx-success', { volume: 0.6 });
+  
+        if (window.bgmSound && window.bgmSound.isPlaying) {
+            window.bgmSound.stop();
+        }
+        window.bgmSound = this.sound.add('bgm', { loop: true, volume: 0.65 });
+        window.bgmSound.play();
   
         this.time.addEvent({
             delay: 800,
@@ -145,9 +135,7 @@ class Gameplay extends Phaser.Scene {
     initKeyboardControls() {
         this.aKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
         this.dKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
-        // 初始移动速度设置为 1000 像素/秒
         this.basketSpeed = 1000;
-        // 第一次加速在 30 秒后
         this.nextSpeedIncreaseTime = 30;
     }
   
@@ -156,13 +144,11 @@ class Gameplay extends Phaser.Scene {
         this.timeElapsed += dt;
         this.timeText.setText(`Time: ${Math.floor(this.timeElapsed)}`);
   
-        // 每 30 秒增加篮子移动速度，每次增加 90 像素/秒
         if (this.timeElapsed < 240 && this.timeElapsed >= this.nextSpeedIncreaseTime) {
             this.basketSpeed += 90;
             this.nextSpeedIncreaseTime += 30;
         }
   
-        // 使用 A 键向左，D 键向右控制篮子移动
         if (this.aKey.isDown) {
             this.basket.x -= this.basketSpeed * dt;
         }
@@ -171,12 +157,11 @@ class Gameplay extends Phaser.Scene {
         }
         this.basket.x = Phaser.Math.Clamp(this.basket.x, 40, this.gameWidth - 40);
   
-        // 使用空格键控制篮子盖子的开关
         if (Phaser.Input.Keyboard.JustDown(this.spaceKey)) {
             this.toggleBasketLid();
         }
   
-        if ((this.basket.body.blocked.down || this.basket.body.touching.down) && !this.ignoreGroundReset && !this.isDamaged) {
+        if ((this.basket.body.blocked.down || this.basket.body.touching.down) && !this.ignoreGroundReset) {
             let basketH = this.basket.displayHeight;
             let platformTop = this.platform.y - (this.platform.displayHeight / 2);
             this.basket.y = platformTop - (basketH / 2);
@@ -186,7 +171,7 @@ class Gameplay extends Phaser.Scene {
         this.fruitGroup.getChildren().forEach((fruit) => {
             if (fruit.y > this.gameHeight) {
                 this.handleMissedFruit();
-                this.sound.play('sfx-failure');
+                this.sound.play('sfx-failure', { volume: 0.6 });
                 fruit.destroy();
             }
         });
@@ -217,11 +202,21 @@ class Gameplay extends Phaser.Scene {
             this.coinText.setText(`Coin: ${this.coinCount}`);
             this.magnetActive = true;
             this.magnetEndTime = this.timeElapsed + 10;
+            if (this.onSound && this.onSound.isPlaying) {
+                this.onSound.stop();
+            }
+            this.onSound = this.sound.add('sfx-on', { volume: 0.6 });
+            this.onSound.play();
         }
       
         if (this.magnetActive) {
             let remaining = Math.ceil(this.magnetEndTime - this.timeElapsed);
             if (remaining <= 0) {
+                if (this.offSound && this.offSound.isPlaying) {
+                    this.offSound.stop();
+                }
+                this.offSound = this.sound.add('sfx-off', { volume: 0.6 });
+                this.offSound.play();
                 this.magnetActive = false;
                 this.magnetText.setText('');
             } else {
@@ -339,7 +334,6 @@ class Gameplay extends Phaser.Scene {
             newObj.body.setVelocityY(curSpeed + Phaser.Math.Between(0, 30));
         });
         
-        // 保持原来的掉落密度代码不变
         if (this.timeElapsed >= 100 && type === 'fruit') {
             let extraFruitCount = Math.min(Math.floor(this.timeElapsed / 100), 2);
             for (let i = 0; i < extraFruitCount; i++) {
@@ -384,7 +378,7 @@ class Gameplay extends Phaser.Scene {
             newObj.body.setOffset(newObj.body.offset.x, newObj.body.offset.y + 5);
         }
     }
-      
+  
     toggleBasketLid() {
         if (!this.isBasketClosed) {
             this.isBasketClosed = true;
@@ -418,6 +412,11 @@ class Gameplay extends Phaser.Scene {
             this.addExplosion(bomb.x, bomb.y);
             this.breakBasket();
         } else {
+            if (this.hitSound && this.hitSound.isPlaying) {
+                this.hitSound.stop();
+            }
+            this.hitSound = this.sound.add('sfx-hit', { volume: 0.6 });
+            this.hitSound.play();
             bomb.setVelocityY(-200);
             bomb.setVelocityX(Phaser.Math.Between(-200,200));
             this.ignoreGroundReset = true;
@@ -430,7 +429,12 @@ class Gameplay extends Phaser.Scene {
     }
     
     handleStoneCollision(basket, stone) {
-        this.addExplosion(stone.x, stone.y);
+        if (this.explosionSound && this.explosionSound.isPlaying) {
+            this.explosionSound.stop();
+        }
+        this.explosionSound = this.sound.add('sfx-explosion', { volume: 0.6 });
+        this.explosionSound.play();
+  
         stone.destroy();
         this.isDamaged = true;
         this.basketCount--;
@@ -443,7 +447,9 @@ class Gameplay extends Phaser.Scene {
             repeat: 5,
             onComplete: () => {
                 this.basket.setAlpha(1);
-                // 在篮子受损动画结束后恢复正常状态
+                let basketH = this.basket.displayHeight;
+                let platformTop = this.platform.y - (this.platform.displayHeight / 2);
+                this.basket.y = platformTop - (basketH / 2);
                 this.isDamaged = false;
                 if (this.basketCount <= 0) {
                     this.scene.start('Gameover', {
@@ -454,7 +460,6 @@ class Gameplay extends Phaser.Scene {
             }
         });
     }
-    
     
     handleExtraBasketCollision(basket, eb) {
         if (this.isBasketClosed) { return; }

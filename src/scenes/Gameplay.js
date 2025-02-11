@@ -2,7 +2,7 @@ class Gameplay extends Phaser.Scene {
     constructor() {
         super("Gameplay");
     }
-   
+
     create() {
         this.gameWidth  = this.cameras.main.width;
         this.gameHeight = this.cameras.main.height;
@@ -12,6 +12,7 @@ class Gameplay extends Phaser.Scene {
         this.basketCount  = 3;
         this.timeElapsed  = 0;
         this.coinCount    = 0;
+  
         this.baseFallSpeed = 100; 
         this.ignoreGroundReset = false;
         this.isDamaged = false;
@@ -58,18 +59,23 @@ class Gameplay extends Phaser.Scene {
         this.basket.setBounce(0);
         this.physics.add.collider(this.basket, this.platform);
   
-        // 修改部分：不直接将篮子位置赋值，而是通过 targetX 追踪鼠标
-        this.basketSpeedFactor = 1;          // 初始速度因子
-        this.nextSpeedIncreaseTime = 60;     // 第一次加速在 60 秒后
-        this.targetX = this.basket.x;        // 初始目标位置
-        this.input.on('pointermove', (pointer) => {
-            this.targetX = Phaser.Math.Clamp(pointer.x, 40, this.gameWidth - 40);
-        });
-        // 保留原来的 pointerdown 事件用于切换篮子盖动画
-        this.input.on('pointerdown', () => {
-            this.toggleBasketLid();
-        });
+        // 移除鼠标控制：不再监听 pointermove 事件
+        // 使用键盘控制篮子左右移动（A 向左，D 向右）
+        this.aKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
+        this.dKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
+        // 使用空格键控制篮子盖子的开关
+        this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+        // E 键功能保持不变
+        this.eKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E);
   
+        // 初始化篮子控制相关变量：
+        // 初始篮子移动速度
+        this.basketSpeed = 300;
+        // 每隔30秒增加移动速度
+        this.nextSpeedIncreaseTime = 30;
+        // this.timeElapsed 已经在 update 中累计
+  
+        // 其它分组初始化保持不变
         this.fruitGroup = this.physics.add.group();
         this.bombGroup = this.physics.add.group();
         this.stoneGroup = this.physics.add.group();
@@ -137,8 +143,9 @@ class Gameplay extends Phaser.Scene {
             loop: true
         });
   
-        this.eKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E);
-        this.magnetActive = false;
+        // 其他逻辑（如 E 键激活磁铁）保持不变
+  
+        // 移除原来的 pointermove 和 pointerdown（用于鼠标控制）
     }
   
     update(time, delta) {
@@ -146,21 +153,27 @@ class Gameplay extends Phaser.Scene {
         this.timeElapsed += dt;
         this.timeText.setText(`Time: ${Math.floor(this.timeElapsed)}`);
   
-        // 每60秒增加一次篮子追踪速度（增加0.05）
+        // 每30秒增加篮子移动速度
         if (this.timeElapsed >= this.nextSpeedIncreaseTime) {
-            this.basketSpeedFactor += 0.05;
-            this.nextSpeedIncreaseTime += 60;
+            this.basketSpeed += 30;  // 每次增加 30 像素/秒
+            this.nextSpeedIncreaseTime += 30;
         }
   
-        // 用 basketSpeedFactor 让篮子逐渐追踪目标 x 坐标
-        let diff = this.targetX - this.basket.x;
-        let moveSpeed = 300 * this.basketSpeedFactor;
-        if (Math.abs(diff) > 1) {
-            let change = Phaser.Math.Clamp(diff, -moveSpeed * dt, moveSpeed * dt);
-            this.basket.x += change;
+        // 使用 A 和 D 键控制篮子左右移动
+        if (this.aKey.isDown) {
+            this.basket.x -= this.basketSpeed * dt;
+        }
+        if (this.dKey.isDown) {
+            this.basket.x += this.basketSpeed * dt;
         }
         this.basket.x = Phaser.Math.Clamp(this.basket.x, 40, this.gameWidth - 40);
-        
+  
+        // 用空格键控制篮子盖子的开关
+        if (Phaser.Input.Keyboard.JustDown(this.spaceKey)) {
+            this.toggleBasketLid();
+        }
+  
+        // 原有篮子落地复位逻辑
         if ((this.basket.body.blocked.down || this.basket.body.touching.down) && !this.ignoreGroundReset && !this.isDamaged) {
             let basketH = this.basket.displayHeight;
             let platformTop = this.platform.y - (this.platform.displayHeight / 2);
@@ -501,4 +514,128 @@ class Gameplay extends Phaser.Scene {
         });
         this.time.delayedCall(600, () => { explosion.destroy(); });
     }
+  
+    // 修改部分：使用键盘控制篮子的左右移动以及空格键控制篮子盖子开关
+    // 在 create() 中新增键盘控制变量
+    // 注意：已删除原来用于鼠标控制篮子位置的 pointermove 事件
+    // 新增 A、D、SPACE 键的控制
+    // E 键功能保持不变（已在原代码中初始化）
+    // 初始化篮子移动速度和加速时间
+    initKeyboardControls() {
+        this.aKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
+        this.dKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
+        this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+        // 初始控制速度（用于左右移动）
+        this.basketSpeed = 300;
+        // 下次加速时间（秒）
+        this.nextSpeedIncreaseTime = 30;
+    }
+  
+    // 在 create() 的最后调用：
+    // this.initKeyboardControls();
+  
+    // 修改 update() 中增加键盘控制逻辑
+    // 请在 update() 的开头加入下面代码
+    // （确保 initKeyboardControls() 已在 create() 中调用）
+    update(time, delta) {
+        let dt = delta / 1000;
+        this.timeElapsed += dt;
+        this.timeText.setText(`Time: ${Math.floor(this.timeElapsed)}`);
+  
+        // 每30秒增加篮子移动速度
+        if (this.timeElapsed >= this.nextSpeedIncreaseTime) {
+            this.basketSpeed += 30;
+            this.nextSpeedIncreaseTime += 30;
+        }
+  
+        // 使用 A 和 D 键控制篮子左右移动
+        if (this.aKey.isDown) {
+            this.basket.x -= this.basketSpeed * dt;
+        }
+        if (this.dKey.isDown) {
+            this.basket.x += this.basketSpeed * dt;
+        }
+        this.basket.x = Phaser.Math.Clamp(this.basket.x, 40, this.gameWidth - 40);
+  
+        // 使用空格键控制篮子盖子的开关
+        if (Phaser.Input.Keyboard.JustDown(this.spaceKey)) {
+            this.toggleBasketLid();
+        }
+  
+        if ((this.basket.body.blocked.down || this.basket.body.touching.down) && !this.ignoreGroundReset && !this.isDamaged) {
+            let basketH = this.basket.displayHeight;
+            let platformTop = this.platform.y - (this.platform.displayHeight / 2);
+            this.basket.y = platformTop - (basketH / 2);
+            this.basket.setVelocityY(0);
+        }
+  
+        this.fruitGroup.getChildren().forEach((fruit) => {
+            if (fruit.y > this.gameHeight) {
+                this.handleMissedFruit();
+                this.sound.play('sfx-failure');
+                fruit.destroy();
+            }
+        });
+      
+        let allFalling = [].concat(
+            this.fruitGroup.getChildren(),
+            this.bombGroup.getChildren(),
+            this.stoneGroup.getChildren(),
+            this.extraBasketGroup.getChildren(),
+            this.coinGroup.getChildren()
+        );
+        allFalling.forEach(obj => {
+            if (obj.x < 0) {
+                obj.x = 0;
+                if (obj.body && typeof obj.body.setVelocityX === 'function') {
+                    obj.body.setVelocityX(0);
+                }
+            } else if (obj.x > this.gameWidth) {
+                obj.x = this.gameWidth;
+                if (obj.body && typeof obj.body.setVelocityX === 'function') {
+                    obj.body.setVelocityX(0);
+                }
+            }
+        });
+      
+        if (Phaser.Input.Keyboard.JustDown(this.eKey) && !this.magnetActive && this.coinCount > 0) {
+            this.coinCount--;
+            this.coinText.setText(`Coin: ${this.coinCount}`);
+            this.magnetActive = true;
+            this.magnetEndTime = this.timeElapsed + 10;
+        }
+      
+        if (this.magnetActive) {
+            let remaining = Math.ceil(this.magnetEndTime - this.timeElapsed);
+            if (remaining <= 0) {
+                this.magnetActive = false;
+                this.magnetText.setText('');
+            } else {
+                this.magnetText.setText(`Magnet: ${remaining}s`);
+            }
+        } else {
+            this.magnetText.setText('');
+        }
+      
+        if (this.magnetActive) {
+            this.fruitGroup.getChildren().forEach(fruit => {
+                if (fruit.y > this.gameHeight / 2 && !fruit.isMagnetized) {
+                    fruit.isMagnetized = true;
+                    this.tweens.add({
+                        targets: fruit,
+                        x: this.basket.x,
+                        y: this.basket.y,
+                        duration: 500,
+                        ease: 'Linear',
+                        onComplete: () => {
+                            this.handleCatchFruit(this.basket, fruit);
+                        }
+                    });
+                }
+            });
+        }
+    }
 }
+  
+// 在 create() 的最后调用初始化键盘控制：
+Gameplay.prototype.initKeyboardControls();

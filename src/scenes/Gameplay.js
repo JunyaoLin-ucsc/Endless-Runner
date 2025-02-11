@@ -4,7 +4,7 @@ class Gameplay extends Phaser.Scene {
     }
   
     create() {
-        this.input.mouse.enabled = true;
+        this.input.mouse.enabled = false;
   
         this.gameWidth  = this.cameras.main.width;
         this.gameHeight = this.cameras.main.height;
@@ -275,8 +275,6 @@ class Gameplay extends Phaser.Scene {
             attempts++;
         } while (overlap && attempts < maxAttempts);
         
-        // 修改：根据游戏经过的时间，每 30 秒增加一次掉落速度，
-        // 增幅为 10 像素/秒，最多增加到 210 秒（step 最大为 7）
         let step = Math.min(Math.floor(this.timeElapsed / 30), 10);
         let curSpeed = this.baseFallSpeed + (step * 10);
         

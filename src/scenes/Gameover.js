@@ -18,6 +18,7 @@ class Gameover extends Phaser.Scene {
     // }
   
     create() {
+        this.input.mouse.enabled = true;
         this.add.image(
             this.cameras.main.width / 2,
             this.cameras.main.height / 2,

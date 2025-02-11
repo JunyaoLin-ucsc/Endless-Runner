@@ -150,9 +150,9 @@ class Gameplay extends Phaser.Scene {
         this.aKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
         this.dKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
         // 将初始移动速度提高到 500 像素/秒
-        this.basketSpeed = 500;
+        this.basketSpeed = 1000;
         // 第一次加速在 30 秒后
-        this.nextSpeedIncreaseTime = 30;
+        this.nextSpeedIncreaseTime = 20;
     }
   
     update(time, delta) {

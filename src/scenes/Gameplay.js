@@ -461,10 +461,10 @@ class Gameplay extends Phaser.Scene {
             repeat: 5,
             onComplete: () => {
                 this.basket.setAlpha(1);
-                // Calculate the desired y position based on the platform
+                // Recalculate the correct Y based on the platform
                 let basketH = this.basket.displayHeight;
                 let platformTop = this.platform.y - (this.platform.displayHeight / 2);
-                // Reset the physics body so that the sprite and body are in sync.
+                // Reset the physics body so that both the sprite and its body are in sync.
                 this.basket.body.reset(this.basket.x, platformTop - (basketH / 2));
                 this.isDamaged = false;
                 if (this.basketCount <= 0) {
@@ -476,10 +476,6 @@ class Gameplay extends Phaser.Scene {
             }
         });
     }
-    
-
-    
-    
     
     handleExtraBasketCollision(basket, eb) {
         if (this.isBasketClosed) { return; }
@@ -522,6 +518,11 @@ class Gameplay extends Phaser.Scene {
                 repeat: 5,
                 onComplete: () => {
                     this.basket.setAlpha(1);
+                    let basketH = this.basket.displayHeight;
+                    let platformTop = this.platform.y - (this.platform.displayHeight / 2);
+                    // Reset the basket's physics body to re-sync the sprite position.
+                    this.basket.body.reset(this.basket.x, platformTop - (basketH / 2));
+                    this.isDamaged = false;
                 }
             });
         } else {
@@ -531,6 +532,7 @@ class Gameplay extends Phaser.Scene {
             });
         }
     }
+    
     
     addExplosion(x, y) {
         let explosion = this.add.particles('coin');

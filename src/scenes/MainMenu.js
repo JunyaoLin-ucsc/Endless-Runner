@@ -8,7 +8,7 @@ class MainMenu extends Phaser.Scene {
 
         // Use a global variable to store bgm volume (set here to 0.4)
         if (!window.bgmSound) {
-            window.bgmSound = this.sound.add('bgm', { loop: true, volume: 0.4 });
+            window.bgmSound = this.sound.add('bgm', { loop: true, volume: 0.3 });
             window.bgmSound.play();
         } else if (!window.bgmSound.isPlaying) {
             window.bgmSound.play();
